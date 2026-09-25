@@ -1,0 +1,41 @@
+package.json
+  s_6ec1bf2cca266f::t_d1e3b9dca99ee3 1-3,5-46,55
+  h_2a13e69373df5d 4
+  s_6ec1bf2cca266f::t_d1f51cc33d19cf 47-54
+README.md
+  s_6ec1bf2cca266f::t_fa487a698d41ac 1-2,4,6-8,17-19,22-25,28-29,33,35-41,43-63,65-97
+  h_2a13e69373df5d 3,5,9-16,20-21,26-27,30-32,34,42,64
+src/index.tsx
+  s_6ec1bf2cca266f::t_938a0485605216 1,3,5-8,10-17,21,35-36,104
+  s_6ec1bf2cca266f::t_988776e80c799e 2,4,9,18-20,22-34,37-103,105
+tsconfig.json
+  s_6ec1bf2cca266f::t_74d2602137c025 1-14,17
+  s_6ec1bf2cca266f::t_109149c828e5dd 15-16
+src/credits.ts
+  s_6ec1bf2cca266f::t_465a6e0b8988f1 1-132
+build.ts
+  s_6ec1bf2cca266f::t_0c0c4b4219d3fb 1-14
+package-lock.json
+  s_6ec1bf2cca266f::t_4b14f427aa5955 1-1961
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a0407b630466e6ef04d7b539e7f83b2e2112f9ec",
+  "prompts": {},
+  "humans": {
+    "h_2a13e69373df5d": {
+      "author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  },
+  "sessions": {
+    "s_6ec1bf2cca266f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f29da4d2dffeBOk4yLYR009Q4F",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
