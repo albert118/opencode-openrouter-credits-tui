@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/solid",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["bun"]
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
+}

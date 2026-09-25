@@ -1,0 +1,55 @@
+{
+	"name": "opencode-openrouter-credits-tui",
+	"version": "0.1.0",
+	"description": "Persistent OpenRouter credits widget for OpenCode configurable refresh/endpoint/low-threshold/auth-path, low-credit notifications.",
+	"type": "module",
+	"license": "MIT",
+	"author": "theQuantumMechanic",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/albert118/opencode-openrouter-credits-tui.git"
+	},
+	"homepage": "https://github.com/albert118/opencode-openrouter-credits-tui",
+	"bugs": {
+		"url": "https://github.com/albert118/opencode-openrouter-credits-tui/issues"
+	},
+	"keywords": [
+		"opencode",
+		"opentui",
+		"openrouter",
+		"credits",
+		"tui",
+		"plugin",
+		"usage"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"build": "bun run build.ts",
+		"typecheck": "tsc --emitDeclarationOnly",
+		"test": "bun test",
+		"prepublishOnly": "bun run typecheck && bun run build && bun test"
+	},
+	"peerDependencies": {
+		"@opentui/solid": ">=0.5.11",
+		"solid-js": "1.9.12"
+	},
+"devDependencies": {
+    "@opencode-ai/plugin": "1.17.13",
+    "@opentui/solid": "0.5.11",
+    "@opentui/core": "0.5.11",
+    "solid-js": "1.9.12",
+    "typescript": "^5.9.3",
+    "@types/bun": "^1.4.2"
+  }
+}
