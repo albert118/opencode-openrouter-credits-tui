@@ -72,8 +72,8 @@ const plugin: TuiPluginModule = {
       const previous = state()
       setState(snapshot)
       if (snapshot.ok) api.kv.set(KV_KEY, snapshot)
-      if (snapshot.ok && snapshot.remaining !== null && snapshot.remaining < opts.lowThreshold)) {
-        if (!lowNotified)) {
+      if (snapshot.ok && snapshot.remaining !== null && snapshot.remaining < opts.lowThreshold) {
+        if (!lowNotified) {
           lowNotified = true
           void api.attention.notify({
             title: "OpenRouter credits low",

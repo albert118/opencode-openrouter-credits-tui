@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
+import type { RGBA } from "@opentui/core"
+import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 
 export type Tier = "green" | "yellow" | "orange" | "red" | "muted"
 export type ToastVariant = "success" | "warning" | "error" | "info"
@@ -62,6 +65,61 @@ export function num(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
+function readOpenRouterKey(authPath: string): string | null {
+  try {
+    const raw = readFileSync(authPath, "utf8")
+    const json = JSON.parse(raw) as { openrouter?: { type?: string; key?: string } }
+    const key = json?.openrouter?.key
+    return typeof key === "string" && key.length > 0 ? key : null
+  } catch {
+    return null
+  }
+}
+
+function unavailable(reason: string): Snapshot {
+  return { ...EMPTY, error: reason }
+}
+
+export async function fetchSnapshot(endpoint: string, authPath: string): Promise<Snapshot> {
+  const key = readOpenRouterKey(authPath)
+  if (!key) {
+    return unavailable("no OpenRouter key in auth.json")
+  }
+  try {
+    const res = await fetch(endpoint, {
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    })
+    if (!res.ok) {
+      return unavailable(`OpenRouter API ${res.status}`)
+    }
+    const json = (await res.json()) as {
+      data?: {
+        limit?: unknown
+        limit_remaining?: unknown
+        limit_reset?: unknown
+        usage_weekly?: unknown
+        usage_monthly?: unknown
+        usage?: unknown
+        free_model_daily_requests?: { remaining?: unknown }
+      }
+    }
+    const d = json?.data ?? {}
+    return {
+      ok: true,
+      remaining: num(d.limit_remaining),
+      limit: num(d.limit),
+      reset: typeof d.limit_reset === "string" ? d.limit_reset : null,
+      usageWeekly: num(d.usage_weekly),
+      usageMonthly: num(d.usage_monthly),
+      usage: num(d.usage),
+      freeRemaining: num(d.free_model_daily_requests?.remaining),
+      fetchedAt: Date.now(),
+    }
+  } catch (err) {
+    return unavailable(err instanceof Error ? err.message : String(err))
+  }
+}
+
 export function pctOf(snapshot: Snapshot): number | null {
   if (!snapshot.ok || snapshot.limit === null || snapshot.remaining === null || snapshot.limit <= 0) {
     return null
@@ -83,7 +141,7 @@ export function usd(value: number): string {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits:  2,
   })
 }
 
@@ -115,6 +173,20 @@ export function tierColorVariant(tier: Tier): ToastVariant {
   }
 }
 
+export function tierColor(theme: TuiThemeCurrent, tier: Tier): RGBA {
+  switch (tier) {
+    case "green":
+      return theme.success
+    case "yellow":
+    case "orange":
+      return theme.warning
+    case "red":
+      return theme.error
+    default:
+      return theme.textMuted
+  }
+}
+
 export function parseOptions(raw: unknown): Options {
   const opts = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
   return {
@@ -125,7 +197,9 @@ export function parseOptions(raw: unknown): Options {
     endpoint:
       typeof opts.endpoint === "string" && opts.endpoint.length > 0 ? opts.endpoint : DEFAULT_OPTIONS.endpoint,
     lowThreshold:
-      typeof opts.lowThreshold === "number" && Number.isFinite(opts.lowThreshold) ? opts.lowThreshold : DEFAULT_OPTIONS.lowThreshold,
+      typeof opts.lowThreshold === "number" && Number.isFinite(opts.lowThreshold) && opts.lowThreshold >= 0
+        ? opts.lowThreshold
+        : DEFAULT_OPTIONS.lowThreshold,
     authPath:
       typeof opts.authPath === "string" && opts.authPath.length > 0 ? opts.authPath : DEFAULT_OPTIONS.authPath,
   }

@@ -1,6 +1,6 @@
 {
 	"name": "opencode-openrouter-credits-tui",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Persistent OpenRouter credits widget for OpenCode configurable refresh/endpoint/low-threshold/auth-path, low-credit notifications.",
 	"type": "module",
 	"license": "MIT",
@@ -34,12 +34,13 @@
 		"README.md",
 		"LICENSE"
 	],
-	"scripts": {
-		"build": "bun run build.ts",
-		"typecheck": "tsc --emitDeclarationOnly",
-		"test": "bun test",
-		"prepublishOnly": "bun run typecheck && bun run build && bun test"
-	},
+"scripts": {
+    "build": "bun run build.ts",
+    "typecheck": "tsc --emitDeclarationOnly",
+    "test": "bun test",
+    "clean": "bun run clean.ts",
+    "prepublishOnly": "bun run clean && bun run typecheck && bun run build && bun test"
+  },
 	"peerDependencies": {
 		"@opentui/solid": ">=0.5.11",
 		"solid-js": "1.9.12"
