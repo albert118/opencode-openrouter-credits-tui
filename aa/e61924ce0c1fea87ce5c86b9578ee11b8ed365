@@ -1,0 +1,19 @@
+.github/workflows/ci.yml
+  s_6ec1bf2cca266f::t_593354059938f9 1-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "aae61924ce0c1fea87ce5c86b9578ee11b8ed365",
+  "prompts": {},
+  "sessions": {
+    "s_6ec1bf2cca266f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f29da4d2dffeBOk4yLYR009Q4F",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
