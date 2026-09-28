@@ -95,8 +95,35 @@ Pass options using the tuple form:
 | `lowThreshold`      | number  | `10`                                                                          | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable.                                                                                                                                                                                                           |
 | `verbose`           | boolean | `false`                                                                       | Show extended info: days-left estimate, free-model requests remaining, and weekly/monthly usage.                                                                                                                                                                                                       |
 | `authPath`          | string  | `$XDG_DATA_HOME/opencode/auth.json`, else `~/.local/share/opencode/auth.json` | Absolute path to the `auth.json` holding `openrouter.key`. The default resolves the same on every OS (OpenCode does not use `~/Library` on macOS) — no tilde expansion is performed, so pass an absolute path when overriding (e.g. `/Users/me/opencode/auth.json`, `C:\Users\me\opencode\auth.json`). |
+| `provider`          | string  | `openrouter`                                                                   | Which provider to poll: `openrouter` (credit balance) or `weave` (hosted Weave Router spend). Anything else falls back to `openrouter`. |
+| `apiKey`            | string  | `""`                                                                            | Weave only. The provisioned read-only analytics key (`ra_…`), sent as `Authorization: Bearer <apiKey>`. No key means the Weave widget shows `unavailable`. |
+| `baseUrl`           | string  | `https://router.workweave.ai`                                                   | Weave only. Base URL of the hosted Weave Router instance to poll. |
 
-> All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD.
+> All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD, and Weave rows are costed in USD.
+
+## Weave Router (usage)
+
+The widget can also show **monthly spend** from a hosted [Weave Router](https://router.workweave.ai) instance instead of an OpenRouter credit balance. Weave is a spend model (it tracks cost, not a pre-funded pool), so there is no balance/limit/reset — the widget polls the analytics export and sums per-request cost.
+
+- Set `"provider": "weave"` and pass your read-only analytics key as `"apiKey"` (an `ra_…` key, provisioned in the Weave dashboard/setup flow — it can read analytics but cannot route or infer). The key is sent only to the configured `baseUrl` as a Bearer token.
+- The widget fetches `GET {baseUrl}/v1/analytics/routing-decisions?since=<month-start>&limit=1000`, cursor-paginates the NDJSON export, and aggregates `actual_input_cost_usd + actual_output_cost_usd` per row.
+- The line reads `Spend · $12.34 · 850 req` (month-to-date spend and request count), and once a second sample is available it appends an estimated `· ≈$2.1/day` burn rate.
+- Weave has no low-credit alert: the `lowThreshold` notification is balance-mode (OpenRouter) only. Failures degrade to `Credits · ⚠ unavailable` just like OpenRouter.
+
+```jsonc
+{
+	"plugin": [
+		[
+			"opencode-openrouter-credits-tui",
+			{
+				"provider": "weave",
+				"apiKey": "ra_...",
+				"baseUrl": "https://router.workweave.ai"
+			}
+		]
+	]
+}
+```
 
 ## Development
 

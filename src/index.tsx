@@ -24,6 +24,7 @@ import {
   fetchSnapshot,
   isSnapshot,
   parseOptions,
+  spendPerDay,
   tierColor,
   tierColorVariant,
   tierOf,
@@ -41,6 +42,7 @@ const plugin: TuiPluginModule = {
     const cached = api.kv.get(KV_KEY)
     const initial: Snapshot = isSnapshot(cached) ? { ...cached, daysLeft: null } : { ...EMPTY, loading: true, error: "loading" }
     const [state, setState] = createSignal<Snapshot>(initial)
+    const [burn, setBurn] = createSignal<number | null>(null)
     const { signal } = api.lifecycle
 
     api.slots.register({
@@ -56,7 +58,7 @@ const plugin: TuiPluginModule = {
               paddingLeft={1}
               paddingRight={1}
             >
-              <text fg={tierColor(theme, tierOf(snapshot))}>{widgetText(snapshot, opts.verbose)}</text>
+              <text fg={tierColor(theme, tierOf(snapshot))}>{widgetText(snapshot, opts.verbose, burn())}</text>
             </box>
           )
         },
@@ -66,13 +68,14 @@ const plugin: TuiPluginModule = {
     let firstFetch = true
     let lowNotified = false
     const tick = async () => {
-      const snapshot = await fetchSnapshot(opts.endpoint, opts.authPath)
+      const snapshot = await fetchSnapshot(opts)
       if (signal.aborted) return
       const previous = state()
       const withDays = { ...snapshot, daysLeft: daysLeft(previous, snapshot) }
       setState(withDays)
+      setBurn(snapshot.mode === "spend" ? spendPerDay(previous, snapshot) : null)
       if (snapshot.ok) api.kv.set(KV_KEY, withDays)
-      if (snapshot.ok && snapshot.remaining !== null && snapshot.remaining < opts.lowThreshold) {
+      if (snapshot.mode === "balance" && snapshot.ok && snapshot.remaining !== null && snapshot.remaining < opts.lowThreshold) {
         if (!lowNotified) {
           lowNotified = true
           void api.attention.notify({

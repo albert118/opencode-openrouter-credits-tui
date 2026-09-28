@@ -1,15 +1,17 @@
-import { readFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
 import type { RGBA } from "@opentui/core"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
+import { getProvider } from "./providers"
 
 export type Tier = "green" | "yellow" | "orange" | "red" | "muted"
 export type ToastVariant = "success" | "warning" | "error" | "info"
+export type ProviderId = "openrouter" | "weave"
 
 export type Snapshot = {
   ok: boolean
   loading?: boolean
+  mode: "balance" | "spend"
   remaining: number | null
   limit: number | null
   reset: string | null
@@ -18,6 +20,9 @@ export type Snapshot = {
   usage: number | null
   freeRemaining: number | null
   daysLeft: number | null
+  spentUsd: number | null
+  requestCount: number | null
+  since: string | null
   error?: string
   fetchedAt: number
 }
@@ -28,6 +33,9 @@ export type Options = {
   lowThreshold: number
   authPath: string
   verbose: boolean
+  provider: ProviderId
+  apiKey: string
+  baseUrl: string
 }
 
 export const EMOJI: Record<Tier, string> = {
@@ -40,6 +48,7 @@ export const EMOJI: Record<Tier, string> = {
 
 export const EMPTY: Snapshot = {
   ok: false,
+  mode: "balance",
   remaining: null,
   limit: null,
   reset: null,
@@ -48,6 +57,9 @@ export const EMPTY: Snapshot = {
   usage: null,
   freeRemaining: null,
   daysLeft: null,
+  spentUsd: null,
+  requestCount: null,
+  since: null,
   fetchedAt: 0,
 }
 
@@ -71,6 +83,9 @@ export const DEFAULT_OPTIONS: Options = {
   lowThreshold: 10,
   authPath: defaultAuthPath(),
   verbose: false,
+  provider: "openrouter",
+  apiKey: "",
+  baseUrl: "https://router.workweave.ai",
 }
 
 export function isSnapshot(value: unknown): value is Snapshot {
@@ -83,60 +98,14 @@ export function num(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
-function readOpenRouterKey(authPath: string): string | null {
-  try {
-    const raw = readFileSync(authPath, "utf8")
-    const json = JSON.parse(raw) as { openrouter?: { type?: string; key?: string } }
-    const key = json?.openrouter?.key
-    return typeof key === "string" && key.length > 0 ? key : null
-  } catch {
-    return null
-  }
-}
-
-function unavailable(reason: string): Snapshot {
+export function unavailable(reason: string): Snapshot {
   return { ...EMPTY, error: reason }
 }
 
-export async function fetchSnapshot(endpoint: string, authPath: string): Promise<Snapshot> {
-  const key = readOpenRouterKey(authPath)
-  if (!key) {
-    return unavailable("no OpenRouter key in auth.json")
-  }
-  try {
-    const res = await fetch(endpoint, {
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    })
-    if (!res.ok) {
-      return unavailable(`OpenRouter API ${res.status}`)
-    }
-    const json = (await res.json()) as {
-      data?: {
-        limit?: unknown
-        limit_remaining?: unknown
-        limit_reset?: unknown
-        usage_weekly?: unknown
-        usage_monthly?: unknown
-        usage?: unknown
-        free_model_daily_requests?: { remaining?: unknown }
-      }
-    }
-    const d = json?.data ?? {}
-    return {
-      ok: true,
-      remaining: num(d.limit_remaining),
-      limit: num(d.limit),
-      reset: typeof d.limit_reset === "string" ? d.limit_reset : null,
-      usageWeekly: num(d.usage_weekly),
-      usageMonthly: num(d.usage_monthly),
-      usage: num(d.usage),
-      freeRemaining: num(d.free_model_daily_requests?.remaining),
-      daysLeft: null,
-      fetchedAt: Date.now(),
-    }
-  } catch (err) {
-    return unavailable(err instanceof Error ? err.message : String(err))
-  }
+export async function fetchSnapshot(opts: Options): Promise<Snapshot> {
+  const provider = getProvider(opts.provider)
+  const raw = await provider.fetch(opts)
+  return provider.parse(raw)
 }
 
 export function pctOf(snapshot: Snapshot): number | null {
@@ -180,15 +149,44 @@ export function daysLeft(previous: Snapshot, current: Snapshot): number | null {
   return Number.isFinite(days) && days >= 0 ? days : null
 }
 
+export function spendPerDay(previous: Snapshot, current: Snapshot): number | null {
+  if (!previous.ok || !current.ok) return null
+  if (previous.spentUsd === null || current.spentUsd === null) return null
+  const elapsedMs = current.fetchedAt - previous.fetchedAt
+  if (elapsedMs < MIN_ELAPSED_MS) return null
+  const delta = current.spentUsd - previous.spentUsd
+  if (delta <= 0) return null
+  const perDay = delta / (elapsedMs / 86_400_000)
+  return Number.isFinite(perDay) && perDay > 0 ? perDay : null
+}
+
 export function formatDaysLeft(days: number): string | null {
   if (!Number.isFinite(days) || days < 0) return null
   if (days < 1) return `≈${Math.max(1, Math.round(days * 24))}h`
   return `≈${Math.round(days)}d`
 }
 
-export function widgetText(snapshot: Snapshot, verbose = false): string {
+export function formatSpendPerDay(perDay: number): string | null {
+  if (!Number.isFinite(perDay) || perDay < 0) return null
+  return `≈${perDay.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })}/day`
+}
+
+export function widgetText(snapshot: Snapshot, verbose = false, spendPerDayValue: number | null = null): string {
   if (snapshot.loading) return "Credits · …"
   if (!snapshot.ok) return "Credits · ⚠ unavailable"
+  if (snapshot.mode === "spend") {
+    let text = `Spend · ${usd(snapshot.spentUsd ?? 0)} · ${snapshot.requestCount ?? 0} req`
+    if (spendPerDayValue !== null) {
+      const f = formatSpendPerDay(spendPerDayValue)
+      if (f) text += ` · ${f}`
+    }
+    return text
+  }
   const { limit, remaining, reset } = snapshot
   let text: string
   let weeklyShown = false
@@ -259,5 +257,13 @@ export function parseOptions(raw: unknown): Options {
     authPath:
       typeof opts.authPath === "string" && opts.authPath.length > 0 ? opts.authPath : DEFAULT_OPTIONS.authPath,
     verbose: typeof opts.verbose === "boolean" ? opts.verbose : DEFAULT_OPTIONS.verbose,
+    provider:
+      opts.provider === "openrouter" || opts.provider === "weave"
+        ? opts.provider
+        : DEFAULT_OPTIONS.provider,
+    apiKey:
+      typeof opts.apiKey === "string" && opts.apiKey.length > 0 ? opts.apiKey : DEFAULT_OPTIONS.apiKey,
+    baseUrl:
+      typeof opts.baseUrl === "string" && opts.baseUrl.length > 0 ? opts.baseUrl : DEFAULT_OPTIONS.baseUrl,
   }
 }

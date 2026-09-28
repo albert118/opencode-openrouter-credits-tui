@@ -6,10 +6,12 @@ import {
   daysLeft,
   defaultAuthPath,
   formatDaysLeft,
+  formatSpendPerDay,
   isSnapshot,
   num,
   parseOptions,
   pctOf,
+  spendPerDay,
   tierColor,
   tierColorVariant,
   tierOf,
@@ -160,6 +162,60 @@ describe("widgetText", () => {
     const s = snap({ limit: null, usageWeekly: 10, usageMonthly: 40, daysLeft: null, freeRemaining: 5 })
     expect(widgetText(s, true)).toBe("Credits · ⚪ $10.00 used · weekly (no limit set) · free 5 · mo $40.00")
   })
+  it("shows spend mode with spent and request count", () => {
+    const s = { ...EMPTY, ok: true, mode: "spend", spentUsd: 12.34, requestCount: 850, fetchedAt: 1 }
+    expect(widgetText(s)).toBe("Spend · $12.34 · 850 req")
+  })
+  it("appends a per-day burn in spend mode when computable", () => {
+    const s = { ...EMPTY, ok: true, mode: "spend", spentUsd: 12.34, requestCount: 850, fetchedAt: 1 }
+    expect(widgetText(s, false, 2.1)).toBe("Spend · $12.34 · 850 req · ≈$2.1/day")
+  })
+  it("omits the per-day burn when null", () => {
+    const s = { ...EMPTY, ok: true, mode: "spend", spentUsd: 12.34, requestCount: 850, fetchedAt: 1 }
+    expect(widgetText(s, false, null)).toBe("Spend · $12.34 · 850 req")
+  })
+})
+
+describe("spendPerDay", () => {
+  it("is null when either snapshot is not ok", () => {
+    const prevNotOk = { ...EMPTY, fetchedAt: 0 }
+    const ok = { ...EMPTY, ok: true, mode: "spend", spentUsd: 10, fetchedAt: 1 }
+    expect(spendPerDay(prevNotOk, ok)).toBeNull()
+    expect(spendPerDay(ok, prevNotOk)).toBeNull()
+  })
+  it("is null when spentUsd is missing", () => {
+    const previous = { ...EMPTY, ok: true, mode: "spend", spentUsd: 10, fetchedAt: 1000 }
+    const noSpend = { ...EMPTY, ok: true, mode: "spend", spentUsd: null, fetchedAt: 1000 + 2 * 86_400_000 }
+    expect(spendPerDay(previous, noSpend)).toBeNull()
+  })
+  it("is null when elapsed time is too short", () => {
+    const previous = { ...EMPTY, ok: true, mode: "spend", spentUsd: 10, fetchedAt: 1000 }
+    const current = { ...EMPTY, ok: true, mode: "spend", spentUsd: 12, fetchedAt: 1000 + 1000 }
+    expect(spendPerDay(previous, current)).toBeNull()
+  })
+  it("is null when spend did not increase", () => {
+    const previous = { ...EMPTY, ok: true, mode: "spend", spentUsd: 10, fetchedAt: 1000 }
+    const same = { ...EMPTY, ok: true, mode: "spend", spentUsd: 10, fetchedAt: 1000 + 2 * 86_400_000 }
+    const decreased = { ...EMPTY, ok: true, mode: "spend", spentUsd: 9, fetchedAt: 1000 + 2 * 86_400_000 }
+    expect(spendPerDay(previous, same)).toBeNull()
+    expect(spendPerDay(previous, decreased)).toBeNull()
+  })
+  it("computes spend per day from the delta", () => {
+    const previous = { ...EMPTY, ok: true, mode: "spend", spentUsd: 10, fetchedAt: 1000 }
+    const current = { ...EMPTY, ok: true, mode: "spend", spentUsd: 14.2, fetchedAt: 1000 + 2 * 86_400_000 }
+    expect(spendPerDay(previous, current)).toBeCloseTo(2.1)
+  })
+})
+
+describe("formatSpendPerDay", () => {
+  it("formats as a single-decimal USD per day", () => {
+    expect(formatSpendPerDay(2.1)).toBe("≈$2.1/day")
+    expect(formatSpendPerDay(12.34)).toBe("≈$12.3/day")
+  })
+  it("returns null for invalid input", () => {
+    expect(formatSpendPerDay(-1)).toBeNull()
+    expect(formatSpendPerDay(Infinity)).toBeNull()
+  })
 })
 
 describe("tierColor", () => {
@@ -206,6 +262,9 @@ describe("parseOptions", () => {
       lowThreshold: 5,
       authPath: "C:\\Users\\me\\opencode\\auth.json",
       verbose: false,
+      provider: "openrouter",
+      apiKey: "",
+      baseUrl: DEFAULT_OPTIONS.baseUrl,
     })
   })
   it("falls back per-field on invalid values", () => {
@@ -225,6 +284,25 @@ describe("parseOptions", () => {
     expect(parseOptions(undefined).verbose).toBe(false)
     expect(parseOptions({ verbose: true }).verbose).toBe(true)
     expect(parseOptions({ verbose: "yes" }).verbose).toBe(false)
+  })
+  it("accepts a valid provider and falls back on invalid ones", () => {
+    expect(parseOptions({ provider: "weave" }).provider).toBe("weave")
+    expect(parseOptions({ provider: "openrouter" }).provider).toBe("openrouter")
+    expect(parseOptions({ provider: "anthropic" }).provider).toBe("openrouter")
+    expect(parseOptions({ provider: 42 }).provider).toBe("openrouter")
+  })
+  it("keeps non-empty apiKey and falls back to empty", () => {
+    expect(parseOptions({ apiKey: "ra_abc123" }).apiKey).toBe("ra_abc123")
+    expect(parseOptions({ apiKey: "" }).apiKey).toBe("")
+    expect(parseOptions({ apiKey: 42 }).apiKey).toBe("")
+    expect(parseOptions(undefined).apiKey).toBe("")
+  })
+  it("keeps non-empty baseUrl and falls back to the hosted default", () => {
+    expect(parseOptions({ baseUrl: "https://weave.example.invalid" }).baseUrl).toBe(
+      "https://weave.example.invalid",
+    )
+    expect(parseOptions({ baseUrl: "" }).baseUrl).toBe(DEFAULT_OPTIONS.baseUrl)
+    expect(parseOptions({ baseUrl: 42 }).baseUrl).toBe(DEFAULT_OPTIONS.baseUrl)
   })
 })
 
