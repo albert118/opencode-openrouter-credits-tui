@@ -4,6 +4,16 @@ A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for
 
 Renders a compact, always-visible line into the `app_bottom` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
 
+## Screenshots/Examples
+
+**Widget:**
+
+![widget example](docs/widget-example.png)
+
+**Verbose mode:**
+
+![verbose mode example](docs/verbose-mode-example.png)
+
 ## Features
 
 - **Persistent `app_bottom` widget:** visible on every route; append-mode slot, so it coexists with OpenCode's internal footers.
@@ -21,11 +31,11 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 - OpenCode (npm plugins are auto-installed by Bun into OpenCode's plugin cache at startup).
 - An OpenRouter API key. The plugin reads it from `auth.json` in OpenCode's data dir, which OpenCode itself writes:
 
-| OS | data dir (`auth.json` lives here) |
-| --- | --- |
-| macOS | `~/.local/share/opencode/auth.json` |
-| Linux | `~/.local/share/opencode/auth.json` (or `$XDG_DATA_HOME/opencode/auth.json` when set) |
-| Windows | `%USERPROFILE%\.local\share\opencode\auth.json` |
+| OS      | data dir (`auth.json` lives here)                                                     |
+| ------- | ------------------------------------------------------------------------------------- |
+| macOS   | `~/.local/share/opencode/auth.json`                                                   |
+| Linux   | `~/.local/share/opencode/auth.json` (or `$XDG_DATA_HOME/opencode/auth.json` when set) |
+| Windows | `%USERPROFILE%\.local\share\opencode\auth.json`                                       |
 
 > [!NOTE] macOS
 > OpenCode uses the same `~/.local/share/opencode` paths on macOS as on Linux — **not** `~/Library/Application Support` (that only applies to admin-managed config at `/Library/Application Support/opencode/`). Finder hides dotfiles — press `Cmd+Shift+.` to reveal `~/.local/…`.
@@ -53,11 +63,11 @@ Restart OpenCode. The widget should now render in the bottom strip of the TUI. A
 
 ## Where opencode stores files
 
-| | macOS | Linux | Windows |
-| --- | --- | --- | --- |
-| **data dir** (`auth.json`) | `~/.local/share/opencode` | `~/.local/share/opencode` (`$XDG_DATA_HOME` wins) | `%USERPROFILE%\.local\share\opencode` |
-| **config** (`opencode.json`, `tui.json`) | `~/.config/opencode` | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins) | `%USERPROFILE%\.config\opencode` |
-| **npm plugin cache** | `~/.cache/opencode/node_modules` | `~/.cache/opencode/node_modules` | `%USERPROFILE%\.cache\opencode\node_modules` |
+|                                          | macOS                            | Linux                                             | Windows                                      |
+| ---------------------------------------- | -------------------------------- | ------------------------------------------------- | -------------------------------------------- |
+| **data dir** (`auth.json`)               | `~/.local/share/opencode`        | `~/.local/share/opencode` (`$XDG_DATA_HOME` wins) | `%USERPROFILE%\.local\share\opencode`        |
+| **config** (`opencode.json`, `tui.json`) | `~/.config/opencode`             | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins)    | `%USERPROFILE%\.config\opencode`             |
+| **npm plugin cache**                     | `~/.cache/opencode/node_modules` | `~/.cache/opencode/node_modules`                  | `%USERPROFILE%\.cache\opencode\node_modules` |
 
 ## Options
 
@@ -78,13 +88,13 @@ Pass options using the tuple form:
 }
 ```
 
-| Option              | Type   | Default                                 | Description                                                                                                                                                                                                                                                  |
-| ------------------- | ------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `refreshIntervalMs` | number | `900000` (15 min)                       | How often to re-fetch the credits snapshot.                                                                                                                                                                                                                  |
-| `endpoint`          | string | `https://openrouter.ai/api/v1/auth/key` | OpenRouter endpoint to query.                                                                                                                                                                                                                                |
-| `lowThreshold`      | number | `10`                                    | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable. |
-| `verbose`           | boolean | `false`                                  | Show extended info: days-left estimate, free-model requests remaining, and weekly/monthly usage. |
-| `authPath`          | string | `$XDG_DATA_HOME/opencode/auth.json`, else `~/.local/share/opencode/auth.json` | Absolute path to the `auth.json` holding `openrouter.key`. The default resolves the same on every OS (OpenCode does not use `~/Library` on macOS) — no tilde expansion is performed, so pass an absolute path when overriding (e.g. `/Users/me/opencode/auth.json`, `C:\Users\me\opencode\auth.json`). |
+| Option              | Type    | Default                                                                       | Description                                                                                                                                                                                                                                                                                            |
+| ------------------- | ------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `refreshIntervalMs` | number  | `900000` (15 min)                                                             | How often to re-fetch the credits snapshot.                                                                                                                                                                                                                                                            |
+| `endpoint`          | string  | `https://openrouter.ai/api/v1/auth/key`                                       | OpenRouter endpoint to query.                                                                                                                                                                                                                                                                          |
+| `lowThreshold`      | number  | `10`                                                                          | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable.                                                                                                                                                                                                           |
+| `verbose`           | boolean | `false`                                                                       | Show extended info: days-left estimate, free-model requests remaining, and weekly/monthly usage.                                                                                                                                                                                                       |
+| `authPath`          | string  | `$XDG_DATA_HOME/opencode/auth.json`, else `~/.local/share/opencode/auth.json` | Absolute path to the `auth.json` holding `openrouter.key`. The default resolves the same on every OS (OpenCode does not use `~/Library` on macOS) — no tilde expansion is performed, so pass an absolute path when overriding (e.g. `/Users/me/opencode/auth.json`, `C:\Users\me\opencode\auth.json`). |
 
 > All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD.
 
