@@ -19,7 +19,16 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 ## Requirements
 
 - OpenCode (npm plugins are auto-installed by Bun into OpenCode's plugin cache at startup).
-- An OpenRouter API key. The plugin reads it from `auth.json` in OpenCode's data dir (`~/.local/share/opencode/auth.json` on Windows: `%USERPROFILE%\.local\share\opencode\auth.json`), which OpenCode itself writes:
+- An OpenRouter API key. The plugin reads it from `auth.json` in OpenCode's data dir, which OpenCode itself writes:
+
+| OS | data dir (`auth.json` lives here) |
+| --- | --- |
+| macOS | `~/.local/share/opencode/auth.json` |
+| Linux | `~/.local/share/opencode/auth.json` (or `$XDG_DATA_HOME/opencode/auth.json` when set) |
+| Windows | `%USERPROFILE%\.local\share\opencode\auth.json` |
+
+> [!NOTE] macOS
+> OpenCode uses the same `~/.local/share/opencode` paths on macOS as on Linux — **not** `~/Library/Application Support` (that only applies to admin-managed config at `/Library/Application Support/opencode/`). Finder hides dotfiles — press `Cmd+Shift+.` to reveal `~/.local/…`.
 
 ```json
 {
@@ -32,7 +41,7 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 
 ## Install
 
-Add the package to the `plugin` array in your OpenCode config (`~/.config/opencode/opencode.jsonc`):
+Add the package to the `plugin` array in your OpenCode config — `~/.config/opencode/opencode.json` on macOS/Linux, `%USERPROFILE%\.config\opencode\opencode.json` on Windows (`.jsonc` files load too; TUI-specific settings go in `tui.json`):
 
 ```jsonc
 {
@@ -40,7 +49,15 @@ Add the package to the `plugin` array in your OpenCode config (`~/.config/openco
 }
 ```
 
-Restart OpenCode. The widget should now render in the bottom strip of the TUI.
+Restart OpenCode. The widget should now render in the bottom strip of the TUI. Alternatively, install it from the OpenCode CLI: `opencode plugin add opencode-openrouter-credits-tui --global`.
+
+## Where opencode stores files
+
+| | macOS | Linux | Windows |
+| --- | --- | --- | --- |
+| **data dir** (`auth.json`) | `~/.local/share/opencode` | `~/.local/share/opencode` (`$XDG_DATA_HOME` wins) | `%USERPROFILE%\.local\share\opencode` |
+| **config** (`opencode.json`, `tui.json`) | `~/.config/opencode` | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins) | `%USERPROFILE%\.config\opencode` |
+| **npm plugin cache** | `~/.cache/opencode/node_modules` | `~/.cache/opencode/node_modules` | `%USERPROFILE%\.cache\opencode\node_modules` |
 
 ## Options
 
@@ -54,7 +71,7 @@ Pass options using the tuple form:
 			{
 				"refreshIntervalMs": 1800000,
 				"lowThreshold": 5,
-				"authPath": "C:\\Users\\me\\opencode\\auth.json"
+				"authPath": "/Users/me/opencode/auth.json" // e.g. C:\Users\me\opencode\auth.json on Windows
 			}
 		]
 	]
@@ -67,7 +84,7 @@ Pass options using the tuple form:
 | `endpoint`          | string | `https://openrouter.ai/api/v1/auth/key` | OpenRouter endpoint to query.                                                                                                                                                                                                                                |
 | `lowThreshold`      | number | `10`                                    | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable. |
 | `verbose`           | boolean | `false`                                  | Show extended info: days-left estimate, free-model requests remaining, and weekly/monthly usage. |
-| `authPath`          | string | `~/.local/share/opencode/auth.json`     | Absolute path to the `auth.json` holding `openrouter.key`. The default is resolved from the user's home directory (`join(homedir(), ".local", "share", "opencode", "auth.json")`)—no tilde expansion is performed, so pass an absolute path when overriding. |
+| `authPath`          | string | `$XDG_DATA_HOME/opencode/auth.json`, else `~/.local/share/opencode/auth.json` | Absolute path to the `auth.json` holding `openrouter.key`. The default resolves the same on every OS (OpenCode does not use `~/Library` on macOS) — no tilde expansion is performed, so pass an absolute path when overriding (e.g. `/Users/me/opencode/auth.json`, `C:\Users\me\opencode\auth.json`). |
 
 > All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD.
 
