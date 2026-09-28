@@ -1,0 +1,14 @@
+README.md
+  h_2a13e69373df5d 7-16,34-38,66-70,91-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bf2b94450f1e0afe0670d807a431dd6fc64d1783",
+  "prompts": {},
+  "humans": {
+    "h_2a13e69373df5d": {
+      "author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
