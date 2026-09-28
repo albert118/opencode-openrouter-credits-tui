@@ -1,0 +1,45 @@
+src/providers/index.ts
+  s_00afc2154cb070::t_3b112ed510bf3a 2-13
+  s_00afc2154cb070::t_45672d2954a0a7 1
+src/providers/types.ts
+  s_00afc2154cb070::t_94472a89f3430a 1-8
+src/index.tsx
+  s_00afc2154cb070::t_7a0c0377a570c1 27,45,61,71,76,78
+README.md
+  s_00afc2154cb070::t_a9c278486dd840 98-100,102-126
+src/providers/weave.ts
+  s_00afc2154cb070::t_980514a93711f6 1-2
+  s_00afc2154cb070::t_feed0cdd877a1f 3-116
+src/core.test.ts
+  s_00afc2154cb070::t_c9942477ce8852 288-306
+  s_00afc2154cb070::t_1ef2deb776ea4e 9,14
+  s_00afc2154cb070::t_d0aebb892b574b 165-218
+  s_00afc2154cb070::t_576b07cd9ee995 265-267
+src/providers/openrouter.ts
+  s_00afc2154cb070::t_f1ac681240714c 2-3
+  s_00afc2154cb070::t_f38e661822ec8a 1,4-75
+src/core.ts
+  s_00afc2154cb070::t_8ed7ecf776fb29 5,9,14,23-25,36-38,51,60-62,86-88,101,105-108,152-162,169-179,182-189,260-267
+src/providers/weave.test.ts
+  s_00afc2154cb070::t_8c226d2cb2f972 1-118
+package.json
+  s_00afc2154cb070::t_db0aa57995303f 3
+package-lock.json
+  s_00afc2154cb070::t_5a37490331420b 3,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1b650127861ece22087ddd928aaca2c2f1c961d2",
+  "prompts": {},
+  "sessions": {
+    "s_00afc2154cb070": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f19d38745ffehma96LLQEPVZFd",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
