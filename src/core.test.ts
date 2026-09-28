@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test"
 import {
   DEFAULT_OPTIONS,
   EMPTY,
+  daysLeft,
+  formatDaysLeft,
   isSnapshot,
   num,
   parseOptions,
@@ -71,6 +73,54 @@ describe("usd", () => {
   })
 })
 
+describe("daysLeft", () => {
+  it("is null when either snapshot is not ok", () => {
+    const prevNotOk = { ...EMPTY, fetchedAt: 0 }
+    const ok = snap()
+    expect(daysLeft(prevNotOk, ok)).toBeNull()
+    expect(daysLeft(ok, prevNotOk)).toBeNull()
+  })
+  it("is null when usage or remaining is missing", () => {
+    const previous = snap({ usage: 100, fetchedAt: 1000 })
+    const noUsage = snap({ usage: null, fetchedAt: 1000 + 2 * 86_400_000 })
+    const noRemaining = snap({ remaining: null, usage: 110, fetchedAt: 1000 + 2 * 86_400_000 })
+    expect(daysLeft(previous, noUsage)).toBeNull()
+    expect(daysLeft(previous, noRemaining)).toBeNull()
+  })
+  it("is null when elapsed time is too short", () => {
+    const previous = snap({ usage: 100, fetchedAt: 1000 })
+    const current = snap({ usage: 110, fetchedAt: 1000 + 1000 })
+    expect(daysLeft(previous, current)).toBeNull()
+  })
+  it("is null when usage did not increase", () => {
+    const previous = snap({ usage: 100, fetchedAt: 1000 })
+    const same = snap({ usage: 100, fetchedAt: 1000 + 2 * 86_400_000 })
+    const decreased = snap({ usage: 90, fetchedAt: 1000 + 2 * 86_400_000 })
+    expect(daysLeft(previous, same)).toBeNull()
+    expect(daysLeft(previous, decreased)).toBeNull()
+  })
+  it("estimates remaining days from burn rate", () => {
+    const previous = snap({ usage: 100, remaining: 25, fetchedAt: 1000 })
+    const current = snap({ usage: 110, remaining: 25, fetchedAt: 1000 + 2 * 86_400_000 })
+    expect(daysLeft(previous, current)).toBe(5)
+  })
+})
+
+describe("formatDaysLeft", () => {
+  it("formats whole days", () => {
+    expect(formatDaysLeft(5)).toBe("≈5d")
+    expect(formatDaysLeft(2.3)).toBe("≈2d")
+  })
+  it("formats sub-day spans as hours", () => {
+    expect(formatDaysLeft(0.5)).toBe("≈12h")
+    expect(formatDaysLeft(0.04)).toBe("≈1h")
+  })
+  it("returns null for invalid input", () => {
+    expect(formatDaysLeft(-1)).toBeNull()
+    expect(formatDaysLeft(Infinity)).toBeNull()
+  })
+})
+
 describe("widgetText", () => {
   it("shows loading state", () => {
     const s = { ...EMPTY, loading: true, fetchedAt: 0 }
@@ -91,6 +141,22 @@ describe("widgetText", () => {
   it("falls back to n/a when nothing available", () => {
     const s = snap({ limit: null, usageWeekly: null, usage: null })
     expect(widgetText(s)).toBe("Credits · ⚪ n/a")
+  })
+  it("appends extras in verbose mode", () => {
+    const s = snap({ daysLeft: 5, freeRemaining: 12, usageWeekly: 25, usageMonthly: 40 })
+    expect(widgetText(s, true)).toBe("Credits · 🟢 $75.00 / $100.00 (75%) · weekly · ≈5d left · free 12 · wk $25.00 · mo $40.00")
+  })
+  it("keeps compact output in default mode", () => {
+    const s = snap({ daysLeft: 5, freeRemaining: 12, usageWeekly: 25, usageMonthly: 40 })
+    expect(widgetText(s)).toBe("Credits · 🟢 $75.00 / $100.00 (75%) · weekly")
+  })
+  it("appends no extras in verbose mode when values are null", () => {
+    const s = snap({ daysLeft: null, freeRemaining: null, usageWeekly: null, usageMonthly: null })
+    expect(widgetText(s, true)).toBe("Credits · 🟢 $75.00 / $100.00 (75%) · weekly")
+  })
+  it("does not duplicate weekly usage in the no-limit verbose branch", () => {
+    const s = snap({ limit: null, usageWeekly: 10, usageMonthly: 40, daysLeft: null, freeRemaining: 5 })
+    expect(widgetText(s, true)).toBe("Credits · ⚪ $10.00 used · weekly (no limit set) · free 5 · mo $40.00")
   })
 })
 
@@ -137,6 +203,7 @@ describe("parseOptions", () => {
       endpoint: "https://example.invalid/auth",
       lowThreshold: 5,
       authPath: "C:\\Users\\me\\opencode\\auth.json",
+      verbose: false,
     })
   })
   it("falls back per-field on invalid values", () => {
@@ -151,6 +218,11 @@ describe("parseOptions", () => {
     expect(negative.lowThreshold).toBe(DEFAULT_OPTIONS.lowThreshold)
     const zero = parseOptions({ lowThreshold: 0 })
     expect(zero.lowThreshold).toBe(0)
+  })
+  it("defaults verbose to false and accepts booleans", () => {
+    expect(parseOptions(undefined).verbose).toBe(false)
+    expect(parseOptions({ verbose: true }).verbose).toBe(true)
+    expect(parseOptions({ verbose: "yes" }).verbose).toBe(false)
   })
 })
 

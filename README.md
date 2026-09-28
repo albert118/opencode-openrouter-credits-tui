@@ -13,6 +13,7 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 - **Toast on first fetch / tier change:** visual feedback when the status line changes tier or first loads.
 - **Muted failure state:** missing key, API errors, or parse failures degrade to `Credits · ⚠ unavailable`.
 - **Configurable:** refresh interval, endpoint, low-credit threshold, and auth file path via plugin options.
+- **Widget insights (verbose):** opt-in `verbose` mode adds a days-left estimate, free-model daily requests remaining, and weekly/monthly usage.
 - **Secure:** No key is ever hardcoded in the plugin; it is read at runtime and sent only to the configured OpenRouter endpoint as a Bearer token.
 
 ## Requirements
@@ -64,7 +65,8 @@ Pass options using the tuple form:
 | ------------------- | ------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `refreshIntervalMs` | number | `900000` (15 min)                       | How often to re-fetch the credits snapshot.                                                                                                                                                                                                                  |
 | `endpoint`          | string | `https://openrouter.ai/api/v1/auth/key` | OpenRouter endpoint to query.                                                                                                                                                                                                                                |
-| `lowThreshold`      | number | `10`                                    | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable.                                                                                                                                                                 |
+| `lowThreshold`      | number | `10`                                    | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable. |
+| `verbose`           | boolean | `false`                                  | Show extended info: days-left estimate, free-model requests remaining, and weekly/monthly usage. |
 | `authPath`          | string | `~/.local/share/opencode/auth.json`     | Absolute path to the `auth.json` holding `openrouter.key`. The default is resolved from the user's home directory (`join(homedir(), ".local", "share", "opencode", "auth.json")`)—no tilde expansion is performed, so pass an absolute path when overriding. |
 
 > All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD.
