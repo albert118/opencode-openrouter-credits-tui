@@ -20,6 +20,7 @@ import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
 import { createSignal } from "solid-js"
 import {
   EMPTY,
+  daysLeft,
   fetchSnapshot,
   isSnapshot,
   parseOptions,
@@ -38,7 +39,7 @@ const plugin: TuiPluginModule = {
   tui: async (api, options) => {
     const opts: Options = parseOptions(options)
     const cached = api.kv.get(KV_KEY)
-    const initial: Snapshot = isSnapshot(cached) ? cached : { ...EMPTY, loading: true, error: "loading" }
+    const initial: Snapshot = isSnapshot(cached) ? { ...cached, daysLeft: null } : { ...EMPTY, loading: true, error: "loading" }
     const [state, setState] = createSignal<Snapshot>(initial)
     const { signal } = api.lifecycle
 
@@ -49,15 +50,13 @@ const plugin: TuiPluginModule = {
           const theme = ctx.theme.current
           return (
             <box
-              border
-              borderColor={theme.border}
+              alignSelf="flex-start"
+              flexGrow={0}
               backgroundColor={theme.backgroundPanel}
-              paddingTop={1}
-              paddingBottom={1}
-              paddingLeft={2}
-              paddingRight={2}
+              paddingLeft={1}
+              paddingRight={1}
             >
-              <text fg={tierColor(theme, tierOf(snapshot))}>{widgetText(snapshot)}</text>
+              <text fg={tierColor(theme, tierOf(snapshot))}>{widgetText(snapshot, opts.verbose)}</text>
             </box>
           )
         },
@@ -70,14 +69,15 @@ const plugin: TuiPluginModule = {
       const snapshot = await fetchSnapshot(opts.endpoint, opts.authPath)
       if (signal.aborted) return
       const previous = state()
-      setState(snapshot)
-      if (snapshot.ok) api.kv.set(KV_KEY, snapshot)
+      const withDays = { ...snapshot, daysLeft: daysLeft(previous, snapshot) }
+      setState(withDays)
+      if (snapshot.ok) api.kv.set(KV_KEY, withDays)
       if (snapshot.ok && snapshot.remaining !== null && snapshot.remaining < opts.lowThreshold) {
         if (!lowNotified) {
           lowNotified = true
           void api.attention.notify({
             title: "OpenRouter credits low",
-            message: widgetText(snapshot),
+            message: widgetText(snapshot, opts.verbose),
             notification: true,
           })
         }
@@ -89,7 +89,7 @@ const plugin: TuiPluginModule = {
         api.ui.toast({
           variant: tier === "muted" ? "warning" : tierColorVariant(tier),
           title: "OpenRouter credits",
-          message: widgetText(snapshot),
+          message: widgetText(snapshot, opts.verbose),
           duration: 4000,
         })
       }

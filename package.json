@@ -1,6 +1,6 @@
 {
 	"name": "opencode-openrouter-credits-tui",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"description": "Persistent OpenRouter credits widget for OpenCode configurable refresh/endpoint/low-threshold/auth-path, low-credit notifications.",
 	"type": "module",
 	"license": "MIT",

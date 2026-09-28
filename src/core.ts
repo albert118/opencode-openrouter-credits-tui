@@ -17,6 +17,7 @@ export type Snapshot = {
   usageMonthly: number | null
   usage: number | null
   freeRemaining: number | null
+  daysLeft: number | null
   error?: string
   fetchedAt: number
 }
@@ -26,6 +27,7 @@ export type Options = {
   endpoint: string
   lowThreshold: number
   authPath: string
+  verbose: boolean
 }
 
 export const EMOJI: Record<Tier, string> = {
@@ -45,6 +47,7 @@ export const EMPTY: Snapshot = {
   usageMonthly: null,
   usage: null,
   freeRemaining: null,
+  daysLeft: null,
   fetchedAt: 0,
 }
 
@@ -53,6 +56,7 @@ export const DEFAULT_OPTIONS: Options = {
   endpoint: "https://openrouter.ai/api/v1/auth/key",
   lowThreshold: 10,
   authPath: join(homedir(), ".local", "share", "opencode", "auth.json"),
+  verbose: false,
 }
 
 export function isSnapshot(value: unknown): value is Snapshot {
@@ -113,6 +117,7 @@ export async function fetchSnapshot(endpoint: string, authPath: string): Promise
       usageMonthly: num(d.usage_monthly),
       usage: num(d.usage),
       freeRemaining: num(d.free_model_daily_requests?.remaining),
+      daysLeft: null,
       fetchedAt: Date.now(),
     }
   } catch (err) {
@@ -141,22 +146,59 @@ export function usd(value: number): string {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 2,
-    maximumFractionDigits:  2,
+    maximumFractionDigits: 2,
   })
 }
 
-export function widgetText(snapshot: Snapshot): string {
+export const MIN_ELAPSED_MS = 60_000
+
+export function daysLeft(previous: Snapshot, current: Snapshot): number | null {
+  if (!previous.ok || !current.ok) return null
+  if (previous.usage === null || current.usage === null) return null
+  if (current.remaining === null) return null
+  const elapsedMs = current.fetchedAt - previous.fetchedAt
+  if (elapsedMs < MIN_ELAPSED_MS) return null
+  const delta = current.usage - previous.usage
+  if (delta <= 0) return null
+  const dailyBurn = delta / (elapsedMs / 86_400_000)
+  if (dailyBurn <= 0) return null
+  const days = current.remaining / dailyBurn
+  return Number.isFinite(days) && days >= 0 ? days : null
+}
+
+export function formatDaysLeft(days: number): string | null {
+  if (!Number.isFinite(days) || days < 0) return null
+  if (days < 1) return `≈${Math.max(1, Math.round(days * 24))}h`
+  return `≈${Math.round(days)}d`
+}
+
+export function widgetText(snapshot: Snapshot, verbose = false): string {
   if (snapshot.loading) return "Credits · …"
   if (!snapshot.ok) return "Credits · ⚠ unavailable"
   const { limit, remaining, reset } = snapshot
+  let text: string
+  let weeklyShown = false
   if (limit !== null && remaining !== null) {
     const pct = Math.round((remaining / limit) * 100)
-    return `Credits · ${EMOJI[tierOf(snapshot)]} ${usd(remaining)} / ${usd(limit)} (${pct}%)${reset ? ` · ${reset}` : ""}`
+    text = `Credits · ${EMOJI[tierOf(snapshot)]} ${usd(remaining)} / ${usd(limit)} (${pct}%)${reset ? ` · ${reset}` : ""}`
+  } else if (snapshot.usageWeekly !== null) {
+    text = `Credits · ${EMOJI.muted} ${usd(snapshot.usageWeekly)} used · weekly (no limit set)`
+    weeklyShown = true
+  } else {
+    text = `Credits · ${EMOJI.muted} n/a`
   }
-  if (snapshot.usageWeekly !== null) {
-    return `Credits · ${EMOJI.muted} ${usd(snapshot.usageWeekly)} used · weekly (no limit set)`
+  if (verbose) {
+    const extras: string[] = []
+    if (snapshot.daysLeft !== null) {
+      const f = formatDaysLeft(snapshot.daysLeft)
+      if (f) extras.push(`${f} left`)
+    }
+    if (snapshot.freeRemaining !== null) extras.push(`free ${snapshot.freeRemaining}`)
+    if (snapshot.usageWeekly !== null && !weeklyShown) extras.push(`wk ${usd(snapshot.usageWeekly)}`)
+    if (snapshot.usageMonthly !== null) extras.push(`mo ${usd(snapshot.usageMonthly)}`)
+    if (extras.length > 0) text += ` · ${extras.join(" · ")}`
   }
-  return `Credits · ${EMOJI.muted} n/a`
+  return text
 }
 
 export function tierColorVariant(tier: Tier): ToastVariant {
@@ -202,5 +244,6 @@ export function parseOptions(raw: unknown): Options {
         : DEFAULT_OPTIONS.lowThreshold,
     authPath:
       typeof opts.authPath === "string" && opts.authPath.length > 0 ? opts.authPath : DEFAULT_OPTIONS.authPath,
+    verbose: typeof opts.verbose === "boolean" ? opts.verbose : DEFAULT_OPTIONS.verbose,
   }
 }
