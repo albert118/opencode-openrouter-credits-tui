@@ -1,0 +1,20 @@
+README.md
+  s_6ec1bf2cca266f::t_575f8bf6198bec 104-129
+  s_6ec1bf2cca266f::t_c11a8875826c5e 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fa499cc050ced41fd48e00226646dbd71206346a",
+  "prompts": {},
+  "sessions": {
+    "s_6ec1bf2cca266f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f29da4d2dffeBOk4yLYR009Q4F",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
