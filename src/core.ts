@@ -51,11 +51,25 @@ export const EMPTY: Snapshot = {
   fetchedAt: 0,
 }
 
+/**
+ * Replicates opencode's data-dir rule (xdg-basedir): `$XDG_DATA_HOME/opencode/auth.json`,
+ * else `~/.local/share/opencode/auth.json` — the same on macOS, Linux, and Windows
+ * (opencode does not use `~/Library/Application Support` on macOS).
+ * See global.ts in anomalyco/opencode.
+ */
+export function defaultAuthPath(
+  home = homedir(),
+  xdgDataHome = process.env.XDG_DATA_HOME,
+): string {
+  const base = xdgDataHome ? xdgDataHome : join(home, ".local", "share")
+  return join(base, "opencode", "auth.json")
+}
+
 export const DEFAULT_OPTIONS: Options = {
   refreshIntervalMs: 15 * 60 * 1000,
   endpoint: "https://openrouter.ai/api/v1/auth/key",
   lowThreshold: 10,
-  authPath: join(homedir(), ".local", "share", "opencode", "auth.json"),
+  authPath: defaultAuthPath(),
   verbose: false,
 }
 

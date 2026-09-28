@@ -1,8 +1,10 @@
 import { describe, expect, it } from "bun:test"
+import { join } from "node:path"
 import {
   DEFAULT_OPTIONS,
   EMPTY,
   daysLeft,
+  defaultAuthPath,
   formatDaysLeft,
   isSnapshot,
   num,
@@ -243,5 +245,36 @@ describe("num", () => {
     expect(num("42")).toBeNull()
     expect(num(Infinity)).toBeNull()
     expect(num(null)).toBeNull()
+  })
+})
+
+describe("defaultAuthPath", () => {
+  it("resolves the macOS default from home", () => {
+    expect(defaultAuthPath("/Users/alice")).toBe(
+      join("/Users/alice", ".local", "share", "opencode", "auth.json"),
+    )
+  })
+  it("resolves the Windows default from home", () => {
+    expect(defaultAuthPath("C:\\Users\\alice")).toBe(
+      join("C:\\Users\\alice", ".local", "share", "opencode", "auth.json"),
+    )
+  })
+  it("resolves the Linux default from home", () => {
+    expect(defaultAuthPath("/home/alice")).toBe(
+      join("/home/alice", ".local", "share", "opencode", "auth.json"),
+    )
+  })
+  it("honors XDG_DATA_HOME when set", () => {
+    expect(defaultAuthPath("/home/alice", "/custom/data")).toBe(
+      join("/custom/data", "opencode", "auth.json"),
+    )
+  })
+  it("treats an empty XDG_DATA_HOME as unset", () => {
+    expect(defaultAuthPath("/home/alice", "")).toBe(
+      join("/home/alice", ".local", "share", "opencode", "auth.json"),
+    )
+  })
+  it("backs DEFAULT_OPTIONS.authPath into the opencode data dir", () => {
+    expect(DEFAULT_OPTIONS.authPath.endsWith(join("opencode", "auth.json"))).toBe(true)
   })
 })
