@@ -1,0 +1,49 @@
+src/core.test.ts
+  s_6ec1bf2cca266f::t_1474eb80bd15e4 5-6
+  s_6ec1bf2cca266f::t_bb78c1c83cc7f1 145-160
+  s_6ec1bf2cca266f::t_4d08330f8cb99a 76-123
+  s_6ec1bf2cca266f::t_183bbe2f5beec1 206
+  s_6ec1bf2cca266f::t_c557a31e5b0887 222-226
+src/index.tsx
+  s_6ec1bf2cca266f::t_b19cf18e169944 80,92
+  s_6ec1bf2cca266f::t_fabd7fce906d95 42
+  s_6ec1bf2cca266f::t_784d4d6b847b4f 53-54,56-57,59
+  s_6ec1bf2cca266f::t_6798c43ed1721e 23
+  s_6ec1bf2cca266f::t_3d386966a1d8d2 72-74
+package.json
+  s_6ec1bf2cca266f::t_05e6faeaca1123 3
+package-lock.json
+  s_6ec1bf2cca266f::t_6eb5df7fba628c 3,9
+README.md
+  s_6ec1bf2cca266f::t_d052752d58dab2 16
+  s_6ec1bf2cca266f::t_220e254b1097ad 68-69
+src/core.ts
+  s_6ec1bf2cca266f::t_c917b06a903229 59
+  s_6ec1bf2cca266f::t_0bedb2ff9b016b 30
+  s_6ec1bf2cca266f::t_224175ec1bc95a 50
+  s_6ec1bf2cca266f::t_ba48b0d7b6f914 120
+  s_6ec1bf2cca266f::t_a48c5315b5b397 149,153-175,179-180,183-188,190-199,201
+  s_6ec1bf2cca266f::t_66441b060cb9eb 247
+  s_6ec1bf2cca266f::t_4e175d77cee240 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "aa74027251a8d6b0622fae334165770a68bc0ae0",
+  "prompts": {},
+  "humans": {
+    "h_2a13e69373df5d": {
+      "author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  },
+  "sessions": {
+    "s_6ec1bf2cca266f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f29da4d2dffeBOk4yLYR009Q4F",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
