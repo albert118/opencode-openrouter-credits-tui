@@ -24,7 +24,7 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 - **Muted failure state:** missing key, API errors, or parse failures degrade to `Credits · ⚠ unavailable`.
 - **Configurable:** refresh interval, endpoint, low-credit threshold, and auth file path via plugin options.
 - **Widget insights (verbose):** opt-in `verbose` mode adds a days-left estimate, free-model daily requests remaining, and weekly/monthly usage.
-- **Secure:** No key is ever hardcoded in the plugin; it is read at runtime and sent only to the configured OpenRouter endpoint as a Bearer token.
+- **Secure:** No key is ever hardcoded in the plugin; it is read at runtime and sent only to the configured provider endpoint as a Bearer token.
 
 ## Requirements
 
@@ -100,6 +100,32 @@ Pass options using the tuple form:
 | `baseUrl`           | string  | `https://router.workweave.ai`                                                   | Weave only. Base URL of the hosted Weave Router instance to poll. |
 
 > All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD, and Weave rows are costed in USD.
+
+## OpenRouter (usage)
+
+The **default** provider shows your OpenRouter credit balance. No configuration is needed beyond an API key in `auth.json` (opencode writes it when you log in):
+
+- The plugin reads `openrouter.key` from `auth.json` at runtime — it is never hardcoded. Override the location with `authPath` if your `auth.json` lives elsewhere.
+- Each refresh calls `GET {endpoint}` (default `https://openrouter.ai/api/v1/auth/key`) with the key as a Bearer token and parses `limit`, `limit_remaining`, `limit_reset`, and the `usage_*` fields.
+- The line reads `Credits · 🟢 $75.00 / $100.00 (75%) · weekly` (emoji tier by % remaining: green >50%, yellow >25%, orange >10%, red below). With `"verbose": true` it appends a days-left estimate, free-model requests remaining, and weekly/monthly usage.
+- Below `lowThreshold` (default `$10`) a low-credit notification fires, deduplicated until credits recover. Set `lowThreshold` to `0` to disable it.
+- Failures degrade to `Credits · ⚠ unavailable`.
+
+```jsonc
+{
+	"plugin": [
+		[
+			"opencode-openrouter-credits-tui",
+			{
+				"endpoint": "https://openrouter.ai/api/v1/auth/key",
+				"lowThreshold": 10,
+				"authPath": "/Users/me/opencode/auth.json",
+				"verbose": false
+			}
+		]
+	]
+}
+```
 
 ## Weave Router (usage)
 
