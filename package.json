@@ -1,5 +1,5 @@
 {
-	"name": "opencode-openrouter-credits-tui",
+	"name": "opencode-usage-tui",
 	"version": "0.4.0",
 	"description": "Persistent OpenRouter credits widget for OpenCode configurable refresh/endpoint/low-threshold/auth-path, low-credit notifications.",
 	"type": "module",
@@ -7,11 +7,11 @@
 	"author": "theQuantumMechanic",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/albert118/opencode-openrouter-credits-tui.git"
+		"url": "https://github.com/albert118/opencode-usage-tui.git"
 	},
-	"homepage": "https://github.com/albert118/opencode-openrouter-credits-tui",
+	"homepage": "https://github.com/albert118/opencode-usage-tui",
 	"bugs": {
-		"url": "https://github.com/albert118/opencode-openrouter-credits-tui/issues"
+		"url": "https://github.com/albert118/opencode-usage-tui/issues"
 	},
 	"keywords": [
 		"opencode",
