@@ -1,0 +1,36 @@
+package.json
+  s_e70feb49f2d3e8::t_5ec46c451eede1 2,10
+  s_e70feb49f2d3e8::t_aeb0b78a27e65a 12
+  s_e70feb49f2d3e8::t_0e2845ad2b885b 14
+src/index.tsx
+  s_e70feb49f2d3e8::t_e59d65156c22ef 36
+  s_e70feb49f2d3e8::t_f165f995e5ebd1 39
+README.md
+  s_6ec1bf2cca266f::t_9c8d8c79c493cc 1,58,62,80,118,143,167
+package-lock.json
+  s_e70feb49f2d3e8::t_e87688962c5ac3 2,8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "aa4488e9e0c53265fe2c79275ac062dac04f3db7",
+  "prompts": {},
+  "sessions": {
+    "s_6ec1bf2cca266f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f29da4d2dffeBOk4yLYR009Q4F",
+        "model": "unknown"
+      },
+      "human_author": null
+    },
+    "s_e70feb49f2d3e8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f1561eac9ffeCKccam1ylRPlRb",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
