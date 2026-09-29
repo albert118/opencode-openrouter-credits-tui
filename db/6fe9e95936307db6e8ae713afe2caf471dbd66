@@ -1,0 +1,32 @@
+package.json
+  s_e70feb49f2d3e8::t_aeb0b78a27e65a 12
+  s_e70feb49f2d3e8::t_5ec46c451eede1 2,10
+  s_e70feb49f2d3e8::t_0e2845ad2b885b 14
+src/index.tsx
+  s_e70feb49f2d3e8::t_f165f995e5ebd1 38
+  s_e70feb49f2d3e8::t_e59d65156c22ef 35
+README.md
+  s_e70feb49f2d3e8::t_a0bb3b6dc09cb6 58
+  s_e70feb49f2d3e8::t_4e4f91ecced3cc 62
+  s_e70feb49f2d3e8::t_d61d378e35c3d4 114
+  s_e70feb49f2d3e8::t_8ce355cad6083b 80
+  s_e70feb49f2d3e8::t_aca9a223470b21 1
+package-lock.json
+  s_e70feb49f2d3e8::t_e87688962c5ac3 2,8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "db6fe9e95936307db6e8ae713afe2caf471dbd66",
+  "prompts": {},
+  "sessions": {
+    "s_e70feb49f2d3e8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f1561eac9ffeCKccam1ylRPlRb",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
