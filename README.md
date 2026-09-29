@@ -1,4 +1,4 @@
-# opencode-openrouter-credits-tui
+# opencode-usage-tui
 
 A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for [OpenCode](https://opencode.ai/).
 
@@ -55,11 +55,11 @@ Add the package to the `plugin` array in your OpenCode config — `~/.config/ope
 
 ```jsonc
 {
-	"plugin": ["opencode-openrouter-credits-tui"]
+	"plugin": ["opencode-usage-tui"]
 }
 ```
 
-Restart OpenCode. The widget should now render in the bottom strip of the TUI. Alternatively, install it from the OpenCode CLI: `opencode plugin add opencode-openrouter-credits-tui --global`.
+Restart OpenCode. The widget should now render in the bottom strip of the TUI. Alternatively, install it from the OpenCode CLI: `opencode plugin add opencode-usage-tui --global`.
 
 ## Where opencode stores files
 
@@ -77,7 +77,7 @@ Pass options using the tuple form:
 {
 	"plugin": [
 		[
-			"opencode-openrouter-credits-tui",
+			"opencode-usage-tui",
 			{
 				"refreshIntervalMs": 1800000,
 				"lowThreshold": 5,
@@ -115,7 +115,7 @@ The **default** provider shows your OpenRouter credit balance. No configuration 
 {
 	"plugin": [
 		[
-			"opencode-openrouter-credits-tui",
+			"opencode-usage-tui",
 			{
 				"endpoint": "https://openrouter.ai/api/v1/auth/key",
 				"lowThreshold": 10,
@@ -140,7 +140,7 @@ The widget can also show **monthly spend** from a hosted [Weave Router](https://
 {
 	"plugin": [
 		[
-			"opencode-openrouter-credits-tui",
+			"opencode-usage-tui",
 			{
 				"provider": "weave",
 				"apiKey": "ra_...",
@@ -164,7 +164,7 @@ npm pack --dry-run      # inspect the publish tarball
 The source is split so the pure logic is testable without the TUI/Solid runtime:
 
 ```
-opencode-openrouter-credits-tui/
+opencode-usage-tui/
 ├── src/
 │   ├── index.tsx        # TUI plugin entry: registers the app_bottom widget
 │   ├── core.ts          # Core logic: fetch, auth, parse, format, options, theme mapping

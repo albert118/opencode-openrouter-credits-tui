@@ -33,10 +33,10 @@ import {
   type Snapshot,
 } from "./core"
 
-const KV_KEY = "openrouter-credits:snapshot"
+const KV_KEY = "usage-tui:snapshot"
 
 const plugin: TuiPluginModule = {
-  id: "openrouter-credits",
+  id: "usage",
   tui: async (api, options) => {
     const opts: Options = parseOptions(options)
     const cached = api.kv.get(KV_KEY)
