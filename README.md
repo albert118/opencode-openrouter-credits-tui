@@ -5,7 +5,9 @@ A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for
 Renders a compact, always-visible line into the `home.footer.status` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
 
 > [!IMPORTANT]
-> This plugin targets **opencode v2** (`@opencode/plugin/tui`). V1 TUI plugins do not run in v2, and this plugin does not run in v1 — upgrade opencode to v2 to use it. On first start, v2 auto-migrates `tui.json(c)` to `cli.json`.
+> This plugin targets **opencode v2** (`@opencode/plugin/tui`). V1 TUI plugins do not run in v2, and **this version does not run in opencode v1**.
+> - On opencode 1.x, install the last v1-compatible release instead: `opencode-usage-tui@0.4.x` (config in `tui.json(c)` with the v1 `"plugin"` array / tuple form).
+> - On v2, the first start auto-migrates `tui.json(c)` to `cli.json`.
 
 ## Screenshots/Examples
 
