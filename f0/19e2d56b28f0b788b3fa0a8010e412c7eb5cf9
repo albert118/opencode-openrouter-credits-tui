@@ -1,0 +1,37 @@
+README.md
+  s_fe4aede09b0293::t_e94fffd5ed3103 3,5-8,22,24,34,57,61-69,73,80,85,89-92,97,127-130,136,152-155,160,171,180-185,194
+src/tui.test.ts
+  s_fe4aede09b0293::t_3df2ba3a0b2488 1-212
+package.json
+  s_fe4aede09b0293::t_649b861c4b5dc5 2-37,44-53,58
+build.ts
+  s_fe4aede09b0293::t_7ec07585c75238 4,7
+src/core.ts
+  s_fe4aede09b0293::t_8f6bb563450c12 6-14
+  s_fe4aede09b0293::t_850f021f1419f6 277-306
+src/tui.tsx
+  s_fe4aede09b0293::t_6ed989e9bfacf9 1-53,55-67,69-88,90-128
+  s_fe4aede09b0293::t_bf479f6f8a2fb0 54,68
+  s_fe4aede09b0293::t_fea45ecde33fed 89
+src/core.test.ts
+  s_fe4aede09b0293::t_f9e1d997c80979 362-420
+  s_fe4aede09b0293::t_8c40b2fa33ad31 6,11,16,21
+package-lock.json
+  s_fe4aede09b0293::t_47ebf2f738b041 2-6236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f019e2d56b28f0b788b3fa0a8010e412c7eb5cf9",
+  "prompts": {},
+  "sessions": {
+    "s_fe4aede09b0293": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f107c32a3ffeYKcl8v4lWK0Z53",
+        "model": "unknown"
+      },
+      "human_author": "albertAtPropertyMe <albertferguson@propertyme.com>"
+    }
+  }
+}
