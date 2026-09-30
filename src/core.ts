@@ -277,7 +277,7 @@ export function parseOptions(raw: unknown): Options {
 }
 
 export const slotSpec = {
-  name: "home.footer.status",
+  name: "prompt.footer.status",
   placement: "append",
 } as const
 

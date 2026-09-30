@@ -415,7 +415,7 @@ describe("buildStatusLine", () => {
 })
 
 describe("slotSpec", () => {
-  it("targets the home footer status slot with append placement", () => {
-    expect(slotSpec).toEqual({ name: "home.footer.status", placement: "append" })
+  it("targets the prompt footer status slot with append placement", () => {
+    expect(slotSpec).toEqual({ name: "prompt.footer.status", placement: "append" })
   })
 })

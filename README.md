@@ -2,14 +2,17 @@
 
 A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for [OpenCode](https://opencode.ai/) **v2** TUI plugins.
 
-Renders a compact, always-visible line into the `home.footer.status` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
+Renders a compact, always-visible line into the `prompt.footer.status` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
 
 > [!IMPORTANT]
-> This plugin targets **opencode v2** (`@opencode/plugin/tui`). V1 TUI plugins do not run in v2, and **this version does not run in opencode v1**.
+> This plugin targets **opencode v2** (`prompt.footer.status` slot). V1 TUI plugins do not run in v2, and **this version does not run in opencode v1**.
+>
 > - On opencode 1.x, install the last v1-compatible release instead: `opencode-usage-tui@0.4.x` (config in `tui.json(c)` with the v1 `"plugin"` array / tuple form).
-> - On v2, the first start auto-migrates `tui.json(c)` to `cli.json`.
+> - On opencode 2.0.x plugin directives live in `cli.json`; `tui.json(c)` is a leftover v1 TUI-config file and is **not** what plugins are loaded from. Local plugins must be registered as a _plugin package directory_ (a folder with a `tui.js` entrypoint) via a string path — see [Install](#install).
 
 ## Screenshots/Examples
+
+### OpenCode V1
 
 **Widget:**
 
@@ -19,9 +22,28 @@ Renders a compact, always-visible line into the `home.footer.status` slot showin
 
 ![verbose mode example](docs/verbose-mode-example.png)
 
+### OpenCode V2
+
+**Widget homepage**
+
+![widget home page](docs/widget-home-page.png)
+
+![alt text](image.png)
+**Widget**
+
+![widget](docs/widget-chat.png)
+
+**Verbose mode: homepage**
+
+![verbose mode homepage](docs/verbose-mode-homepage.png)
+
+**Verbose mode: chat**
+
+![verbose mode chat](docs/verbose-mode-chat.png)
+
 ## Features
 
-- **Persistent `home.footer.status` widget:** a compact status row on the home route; append-mode slot, so it coexists with OpenCode's internal footers.
+- **Persistent `prompt.footer.status` widget:** a compact status cell in the session prompt's footer, so it stays visible while you work (append-mode slot, coexists with OpenCode's internal status).
 - **15-minute auto-refresh:** auto-updates to keep you informed. No manually checking a command to keep up to date.
 - **Instant paint:** the last-known snapshot is seeded from the durable store before the first network round-trip, and written back after each successful fetch.
 - **Low-credit notification:** notifies when remaining balance drops below a configurable threshold.
@@ -56,7 +78,7 @@ Renders a compact, always-visible line into the `home.footer.status` slot showin
 
 ## Install
 
-Add the package to the `plugins` array in your OpenCode v2 config — `~/.config/opencode/cli.json` on macOS/Linux, `%USERPROFILE%\.config\opencode\cli.json` on Windows (`.jsonc` files load too). The old `tui.json(c)` is auto-migrated to `cli.json` on first v2 start:
+Add the package to the `plugins` array in your OpenCode v2 config — `~/.config/opencode/cli.json` on macOS/Linux, `%USERPROFILE%\.config\opencode\cli.json` on Windows (`.jsonc` files load too). The npm package form loads the widget from the plugin cache; to run from this checkout instead, use the local-directory form — see [From a local build](#from-a-local-build-development):
 
 ```jsonc
 {
@@ -74,17 +96,38 @@ Add the package to the `plugins` array in your OpenCode v2 config — `~/.config
 
 Restart OpenCode. The widget should now render in the home footer status row of the TUI. Alternatively, install it from the OpenCode CLI: `opencode plugin add opencode-usage-tui --global`.
 
+### From a local build (development)
+
+To run the widget straight from this checkout on opencode 2.0.x, register it as a local **plugin package directory**. opencode only discovers local plugins that are directories with a `tui.js` entrypoint referenced by a string path — a raw `.js` file, or a file path inside the object form, is ignored.
+
+Create a dispatcher entry under your global config directory (absolute path shown for Windows; adapt per OS):
+
+```js
+// ~/.config/opencode/usage-tui/tui.js
+export { default } from "C:/absolute/path/to/opencode-usage-tui/dist/tui.js";
+```
+
+then register the directory (not the file) in `cli.json` — the object form still passes options:
+
+```jsonc
+{
+	"plugins": [{ "package": "./usage-tui", "options": { "verbose": true } }]
+}
+```
+
+Restart OpenCode (or let its config watcher reload the plugin). `dist/tui.js` is dependency-free apart from `@opentui/solid`, so it loads from the config directory without adding the v2 SDK to `~/.config/opencode/package.json`.
+
 ## Where opencode stores files
 
-|                                          | macOS                            | Linux                                             | Windows                                      |
-| ---------------------------------------- | -------------------------------- | ------------------------------------------------- | -------------------------------------------- |
-| **data dir** (`auth.json`)               | `~/.local/share/opencode`        | `~/.local/share/opencode` (`$XDG_DATA_HOME` wins) | `%USERPROFILE%\.local\share\opencode`        |
-| **config** (`cli.json`)                  | `~/.config/opencode`             | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins)    | `%USERPROFILE%\.config\opencode`             |
-| **npm plugin cache**                     | `~/.cache/opencode/node_modules` | `~/.cache/opencode/node_modules`                  | `%USERPROFILE%\.cache\opencode\node_modules` |
+|                            | macOS                            | Linux                                             | Windows                                      |
+| -------------------------- | -------------------------------- | ------------------------------------------------- | -------------------------------------------- |
+| **data dir** (`auth.json`) | `~/.local/share/opencode`        | `~/.local/share/opencode` (`$XDG_DATA_HOME` wins) | `%USERPROFILE%\.local\share\opencode`        |
+| **config** (`cli.json`)    | `~/.config/opencode`             | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins)    | `%USERPROFILE%\.config\opencode`             |
+| **npm plugin cache**       | `~/.cache/opencode/node_modules` | `~/.cache/opencode/node_modules`                  | `%USERPROFILE%\.cache\opencode\node_modules` |
 
 ## Options
 
-Pass options in the object form of the `plugins` array:
+Pass options in the object form of the `plugins` array (works for npm packages and local-directory packages alike):
 
 ```jsonc
 {
@@ -108,9 +151,9 @@ Pass options in the object form of the `plugins` array:
 | `lowThreshold`      | number  | `10`                                                                          | Remaining balance (in USD) below which a low-credit notification fires. Set to 0 to disable.                                                                                                                                                                                                           |
 | `verbose`           | boolean | `false`                                                                       | Show extended info: days-left estimate, free-model requests remaining, and weekly/monthly usage.                                                                                                                                                                                                       |
 | `authPath`          | string  | `$XDG_DATA_HOME/opencode/auth.json`, else `~/.local/share/opencode/auth.json` | Absolute path to the `auth.json` holding `openrouter.key`. The default resolves the same on every OS (OpenCode does not use `~/Library` on macOS) — no tilde expansion is performed, so pass an absolute path when overriding (e.g. `/Users/me/opencode/auth.json`, `C:\Users\me\opencode\auth.json`). |
-| `provider`          | string  | `openrouter`                                                                   | Which provider to poll: `openrouter` (credit balance) or `weave` (hosted Weave Router spend). Anything else falls back to `openrouter`. |
-| `apiKey`            | string  | `""`                                                                            | Weave only. The provisioned read-only analytics key (`ra_…`), sent as `Authorization: Bearer <apiKey>`. No key means the Weave widget shows `unavailable`. |
-| `baseUrl`           | string  | `https://router.workweave.ai`                                                   | Weave only. Base URL of the hosted Weave Router instance to poll. |
+| `provider`          | string  | `openrouter`                                                                  | Which provider to poll: `openrouter` (credit balance) or `weave` (hosted Weave Router spend). Anything else falls back to `openrouter`.                                                                                                                                                                |
+| `apiKey`            | string  | `""`                                                                          | Weave only. The provisioned read-only analytics key (`ra_…`), sent as `Authorization: Bearer <apiKey>`. No key means the Weave widget shows `unavailable`.                                                                                                                                             |
+| `baseUrl`           | string  | `https://router.workweave.ai`                                                 | Weave only. Base URL of the hosted Weave Router instance to poll.                                                                                                                                                                                                                                      |
 
 > All monetary values shown by the widget are in USD — OpenRouter reports credit balances in USD, and Weave rows are costed in USD.
 
@@ -168,18 +211,22 @@ The widget can also show **monthly spend** from a hosted [Weave Router](https://
 
 ```sh
 bun install
-bun run build           # Bun.build (Solid transform) → dist/
+bun run build           # Bun.build (Solid transform) → dist/tui.js (dependency-free bundle)
 bun run typecheck       # tsc --emitDeclarationOnly
 bun test                # unit tests for the pure helpers + the fake-context plugin tests
 npm pack --dry-run      # inspect the publish tarball
 ```
+
+`bun run build` emits a **dependency-free bundle**: `dist/tui.js` imports only `@opentui/solid` (plus Node built-ins), and the `@opencode/plugin/tui` import is type-only — `export default { id, setup }`. That lets the widget run as a local plugin directory without the v2 SDK present in `~/.config/opencode/node_modules`.
+
+The durable snapshot lives under opencode's state dir at `latest/tui/plugin.usage.snapshot.json` (segment `plugin.usage.<key>`). Plugin storage keys must match `^[a-zA-Z0-9][a-zA-Z0-9._-]*$` — keep `STORE_KEY` / the storage key free of `:` (`usage-tui:snapshot` is rejected with `Invalid storage segment`); the widget uses `snapshot`.
 
 The source is split so the pure logic is testable without the TUI/Solid runtime:
 
 ```
 opencode-usage-tui/
 ├── src/
-│   ├── tui.tsx         # v2 plugin entry: Plugin.define + home.footer.status widget
+│   ├── tui.tsx         # v2 plugin entry: export default { id, setup } → prompt.footer.status widget
 │   ├── tui.test.ts     # fake-context tests (no JSX execution)
 │   ├── core.ts         # Core logic: fetch, auth, parse, format, options, theme mapping
 │   ├── core.test.ts    # bun test unit tests

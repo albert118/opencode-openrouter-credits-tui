@@ -12,7 +12,7 @@
  */
 
 /** @jsxImportSource @opentui/solid */
-import { Plugin } from "@opencode/plugin/tui"
+import type { Plugin } from "@opencode/plugin/tui"
 import type { ResolvedTheme } from "@opencode/theme/tui"
 import type { RGBA } from "@opentui/core"
 import {
@@ -31,7 +31,7 @@ import {
   type Snapshot,
 } from "./core"
 
-const STORE_KEY = "usage-tui:snapshot"
+const STORE_KEY = "snapshot"
 const TOAST_TITLE = "OpenRouter credits"
 const TOAST_DURATION_MS = 4000
 
@@ -44,9 +44,9 @@ function themeToken(theme: ResolvedTheme, path: string): RGBA | undefined {
   return value as RGBA
 }
 
-export default Plugin.define({
+export default {
   id: "usage",
-  setup(context) {
+  setup(context: Plugin.Context) {
     const opts: Options = parseOptions(context.options)
     const [snapshot, updateSnapshot] = context.storage.store<Snapshot>(STORE_KEY, {
       initial: initialSnapshot(undefined),
@@ -71,7 +71,6 @@ export default Plugin.define({
           <box
             alignSelf="flex-start"
             flexGrow={0}
-            backgroundColor={theme.background.raised.base}
             paddingLeft={1}
             paddingRight={1}
           >
@@ -87,11 +86,20 @@ export default Plugin.define({
       const fresh = await fetchSnapshot(opts)
       if (controller.signal.aborted) return
       const previous = snapshot
-      const withDays = { ...fresh, daysLeft: daysLeft(previous, fresh) }
+      // A fetch settles the snapshot: clear the loading seed flag so the widget
+      // renders the fetched values instead of the "…" placeholder.
+      const settled = {
+        ...fresh,
+        daysLeft: daysLeft(previous, fresh),
+        loading: false,
+        error: fresh.ok ? undefined : fresh.error,
+      }
       burn = fresh.mode === "spend" ? spendPerDay(previous, fresh) : null
-      if (fresh.ok) {
+      // Write back good data, or degrade the display when we have none yet;
+      // transient failures keep the last-known good snapshot painted.
+      if (fresh.ok || !previous.ok) {
         void updateSnapshot((draft) => {
-          Object.assign(draft, withDays)
+          Object.assign(draft, settled)
         })
       }
       if (fresh.mode === "balance" && fresh.ok && fresh.remaining !== null && fresh.remaining < opts.lowThreshold) {
@@ -125,4 +133,4 @@ export default Plugin.define({
       clearInterval(interval)
     }
   },
-})
+} satisfies Plugin.Definition
