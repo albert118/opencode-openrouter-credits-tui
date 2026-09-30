@@ -73,11 +73,11 @@ afterEach(() => {
 })
 
 describe("usage plugin (fake context)", () => {
-  it("registers the home.footer.status slot with append placement", () => {
+  it("registers the prompt.footer.status slot with append placement", () => {
     const fake = createFakeContext()
     const cleanup = plugin.setup(fake.context as any)
     expect(fake.slots).toHaveLength(1)
-    expect(fake.slots[0].append).toBe("home.footer.status")
+    expect(fake.slots[0].append).toBe("prompt.footer.status")
     expect(fake.slots[0].prepend).toBeUndefined()
     expect(fake.slots[0].replace).toBeUndefined()
     expect(typeof fake.slots[0].render).toBe("function")

@@ -2,10 +2,10 @@
 
 A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for [OpenCode](https://opencode.ai/) **v2** TUI plugins.
 
-Renders a compact, always-visible line into the `home.footer.status` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
+Renders a compact, always-visible line into the `prompt.footer.status` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
 
 > [!IMPORTANT]
-> This plugin targets **opencode v2** (`home.footer.status` slot). V1 TUI plugins do not run in v2, and **this version does not run in opencode v1**.
+> This plugin targets **opencode v2** (`prompt.footer.status` slot). V1 TUI plugins do not run in v2, and **this version does not run in opencode v1**.
 > - On opencode 1.x, install the last v1-compatible release instead: `opencode-usage-tui@0.4.x` (config in `tui.json(c)` with the v1 `"plugin"` array / tuple form).
 > - On opencode 2.0.x plugin directives live in `cli.json`; `tui.json(c)` is a leftover v1 TUI-config file and is **not** what plugins are loaded from. Local plugins must be registered as a *plugin package directory* (a folder with a `tui.js` entrypoint) via a string path — see [Install](#install).
 
@@ -21,7 +21,7 @@ Renders a compact, always-visible line into the `home.footer.status` slot showin
 
 ## Features
 
-- **Persistent `home.footer.status` widget:** a compact status row on the home route; append-mode slot, so it coexists with OpenCode's internal footers.
+- **Persistent `prompt.footer.status` widget:** a compact status cell in the session prompt's footer, so it stays visible while you work (append-mode slot, coexists with OpenCode's internal status).
 - **15-minute auto-refresh:** auto-updates to keep you informed. No manually checking a command to keep up to date.
 - **Instant paint:** the last-known snapshot is seeded from the durable store before the first network round-trip, and written back after each successful fetch.
 - **Low-credit notification:** notifies when remaining balance drops below a configurable threshold.
@@ -206,7 +206,7 @@ The source is split so the pure logic is testable without the TUI/Solid runtime:
 ```
 opencode-usage-tui/
 ├── src/
-│   ├── tui.tsx         # v2 plugin entry: export default { id, setup } → home.footer.status widget
+│   ├── tui.tsx         # v2 plugin entry: export default { id, setup } → prompt.footer.status widget
 │   ├── tui.test.ts     # fake-context tests (no JSX execution)
 │   ├── core.ts         # Core logic: fetch, auth, parse, format, options, theme mapping
 │   ├── core.test.ts    # bun test unit tests
