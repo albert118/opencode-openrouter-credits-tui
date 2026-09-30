@@ -1,10 +1,10 @@
 import solidTransformPlugin from "@opentui/solid/bun-plugin"
 
 const result = await Bun.build({
-  entrypoints: ["src/index.tsx"],
+  entrypoints: ["src/tui.tsx"],
   outdir: "dist",
   target: "bun",
-  external: ["@opentui/*", "solid-js", "@opencode-ai/plugin"],
+  external: ["@opentui/*", "solid-js", "@opencode/plugin", "@opencode-ai/plugin"],
   plugins: [solidTransformPlugin],
 })
 

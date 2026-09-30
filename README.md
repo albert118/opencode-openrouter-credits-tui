@@ -1,8 +1,11 @@
 # opencode-usage-tui
 
-A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for [OpenCode](https://opencode.ai/).
+A persistent [OpenRouter](https://openrouter.ai) credits widget and notifier for [OpenCode](https://opencode.ai/) **v2** TUI plugins.
 
-Renders a compact, always-visible line into the `app_bottom` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
+Renders a compact, always-visible line into the `home.footer.status` slot showing your API credit balance, usage, and reset period. It refreshes automatically, paints instantly from a persisted snapshot, degrades to a muted state on network failure, and notifies you when credits run low.
+
+> [!IMPORTANT]
+> This plugin targets **opencode v2** (`@opencode/plugin/tui`). V1 TUI plugins do not run in v2, and this plugin does not run in v1 — upgrade opencode to v2 to use it. On first start, v2 auto-migrates `tui.json(c)` to `cli.json`.
 
 ## Screenshots/Examples
 
@@ -16,9 +19,9 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 
 ## Features
 
-- **Persistent `app_bottom` widget:** visible on every route; append-mode slot, so it coexists with OpenCode's internal footers.
+- **Persistent `home.footer.status` widget:** a compact status row on the home route; append-mode slot, so it coexists with OpenCode's internal footers.
 - **15-minute auto-refresh:** auto-updates to keep you informed. No manually checking a command to keep up to date.
-- **Instant paint:** the last-known snapshot is seeded before the first network round-trip, and written back after each successful fetch.
+- **Instant paint:** the last-known snapshot is seeded from the durable store before the first network round-trip, and written back after each successful fetch.
 - **Low-credit notification:** notifies when remaining balance drops below a configurable threshold.
 - **Toast on first fetch / tier change:** visual feedback when the status line changes tier or first loads.
 - **Muted failure state:** missing key, API errors, or parse failures degrade to `Credits · ⚠ unavailable`.
@@ -28,7 +31,7 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 
 ## Requirements
 
-- OpenCode (npm plugins are auto-installed by Bun into OpenCode's plugin cache at startup).
+- OpenCode **v2** (npm plugins are auto-installed by Bun into OpenCode's plugin cache at startup).
 - An OpenRouter API key. The plugin reads it from `auth.json` in OpenCode's data dir, which OpenCode itself writes:
 
 | OS      | data dir (`auth.json` lives here)                                                     |
@@ -51,39 +54,47 @@ Renders a compact, always-visible line into the `app_bottom` slot showing your A
 
 ## Install
 
-Add the package to the `plugin` array in your OpenCode config — `~/.config/opencode/opencode.json` on macOS/Linux, `%USERPROFILE%\.config\opencode\opencode.json` on Windows (`.jsonc` files load too; TUI-specific settings go in `tui.json`):
+Add the package to the `plugins` array in your OpenCode v2 config — `~/.config/opencode/cli.json` on macOS/Linux, `%USERPROFILE%\.config\opencode\cli.json` on Windows (`.jsonc` files load too). The old `tui.json(c)` is auto-migrated to `cli.json` on first v2 start:
 
 ```jsonc
 {
-	"plugin": ["opencode-usage-tui"]
+	"plugins": [
+		{
+			"package": "opencode-usage-tui",
+			"options": {
+				"refreshIntervalMs": 1800000,
+				"lowThreshold": 5
+			}
+		}
+	]
 }
 ```
 
-Restart OpenCode. The widget should now render in the bottom strip of the TUI. Alternatively, install it from the OpenCode CLI: `opencode plugin add opencode-usage-tui --global`.
+Restart OpenCode. The widget should now render in the home footer status row of the TUI. Alternatively, install it from the OpenCode CLI: `opencode plugin add opencode-usage-tui --global`.
 
 ## Where opencode stores files
 
 |                                          | macOS                            | Linux                                             | Windows                                      |
 | ---------------------------------------- | -------------------------------- | ------------------------------------------------- | -------------------------------------------- |
 | **data dir** (`auth.json`)               | `~/.local/share/opencode`        | `~/.local/share/opencode` (`$XDG_DATA_HOME` wins) | `%USERPROFILE%\.local\share\opencode`        |
-| **config** (`opencode.json`, `tui.json`) | `~/.config/opencode`             | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins)    | `%USERPROFILE%\.config\opencode`             |
+| **config** (`cli.json`)                  | `~/.config/opencode`             | `~/.config/opencode` (`$XDG_CONFIG_HOME` wins)    | `%USERPROFILE%\.config\opencode`             |
 | **npm plugin cache**                     | `~/.cache/opencode/node_modules` | `~/.cache/opencode/node_modules`                  | `%USERPROFILE%\.cache\opencode\node_modules` |
 
 ## Options
 
-Pass options using the tuple form:
+Pass options in the object form of the `plugins` array:
 
 ```jsonc
 {
-	"plugin": [
-		[
-			"opencode-usage-tui",
-			{
+	"plugins": [
+		{
+			"package": "opencode-usage-tui",
+			"options": {
 				"refreshIntervalMs": 1800000,
 				"lowThreshold": 5,
 				"authPath": "/Users/me/opencode/auth.json" // e.g. C:\Users\me\opencode\auth.json on Windows
 			}
-		]
+		}
 	]
 }
 ```
@@ -113,16 +124,16 @@ The **default** provider shows your OpenRouter credit balance. No configuration 
 
 ```jsonc
 {
-	"plugin": [
-		[
-			"opencode-usage-tui",
-			{
+	"plugins": [
+		{
+			"package": "opencode-usage-tui",
+			"options": {
 				"endpoint": "https://openrouter.ai/api/v1/auth/key",
 				"lowThreshold": 10,
 				"authPath": "/Users/me/opencode/auth.json",
 				"verbose": false
 			}
-		]
+		}
 	]
 }
 ```
@@ -138,15 +149,15 @@ The widget can also show **monthly spend** from a hosted [Weave Router](https://
 
 ```jsonc
 {
-	"plugin": [
-		[
-			"opencode-usage-tui",
-			{
+	"plugins": [
+		{
+			"package": "opencode-usage-tui",
+			"options": {
 				"provider": "weave",
 				"apiKey": "ra_...",
 				"baseUrl": "https://router.workweave.ai"
 			}
-		]
+		}
 	]
 }
 ```
@@ -157,7 +168,7 @@ The widget can also show **monthly spend** from a hosted [Weave Router](https://
 bun install
 bun run build           # Bun.build (Solid transform) → dist/
 bun run typecheck       # tsc --emitDeclarationOnly
-bun test                # unit tests for the pure helpers
+bun test                # unit tests for the pure helpers + the fake-context plugin tests
 npm pack --dry-run      # inspect the publish tarball
 ```
 
@@ -166,10 +177,12 @@ The source is split so the pure logic is testable without the TUI/Solid runtime:
 ```
 opencode-usage-tui/
 ├── src/
-│   ├── index.tsx        # TUI plugin entry: registers the app_bottom widget
-│   ├── core.ts          # Core logic: fetch, auth, parse, format, options, theme mapping
-│   └── core.test.ts     # bun test unit tests
-├── build.ts             # Bundles src/index.tsx with @opentui/solid's transform
+│   ├── tui.tsx         # v2 plugin entry: Plugin.define + home.footer.status widget
+│   ├── tui.test.ts     # fake-context tests (no JSX execution)
+│   ├── core.ts         # Core logic: fetch, auth, parse, format, options, theme mapping
+│   ├── core.test.ts    # bun test unit tests
+│   └── providers/      # openrouter + weave providers
+├── build.ts            # Bundles src/tui.tsx with @opentui/solid's transform
 ├── package.json
 ├── tsconfig.json
 ├── README.md
