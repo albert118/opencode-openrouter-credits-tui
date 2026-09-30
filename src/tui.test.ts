@@ -88,9 +88,9 @@ describe("usage plugin (fake context)", () => {
     const fake = createFakeContext()
     const cleanup = plugin.setup(fake.context as any)
     expect(fake.registrations).toHaveLength(1)
-    expect(fake.registrations[0].key).toBe("usage-tui:snapshot")
+    expect(fake.registrations[0].key).toBe("snapshot")
     expect(fake.registrations[0].initial).toEqual({ ...EMPTY, loading: true, error: "loading" })
-    expect(fake.stores.get("usage-tui:snapshot")?.value).toEqual({ ...EMPTY, loading: true, error: "loading" })
+    expect(fake.stores.get("snapshot")?.value).toEqual({ ...EMPTY, loading: true, error: "loading" })
     cleanup()
   })
 
@@ -106,9 +106,9 @@ describe("usage plugin (fake context)", () => {
       daysLeft: 5,
       fetchedAt: 1,
     }
-    const fake = createFakeContext({ persisted: { "usage-tui:snapshot": stored } })
+    const fake = createFakeContext({ persisted: { "snapshot": stored } })
     const cleanup = plugin.setup(fake.context as any)
-    const value = fake.stores.get("usage-tui:snapshot")?.value as Snapshot
+    const value = fake.stores.get("snapshot")?.value as Snapshot
     expect(isSnapshot(value)).toBe(true)
     expect(value.daysLeft).toBeNull()
     expect(value.remaining).toBe(75)
@@ -126,12 +126,14 @@ describe("usage plugin (fake context)", () => {
     const cleanup = plugin.setup(fake.context as any)
     try {
       await sleep(20)
-      const value = fake.stores.get("usage-tui:snapshot")?.value as Snapshot
+      const value = fake.stores.get("snapshot")?.value as Snapshot
       expect(value.ok).toBe(true)
       expect(value.mode).toBe("balance")
       expect(value.remaining).toBe(80)
       expect(value.limit).toBe(100)
-      expect(fake.stores.get("usage-tui:snapshot")?.writes.length).toBeGreaterThan(0)
+      expect(value.loading).toBe(false)
+      expect(value.error).toBeUndefined()
+      expect(fake.stores.get("snapshot")?.writes.length).toBeGreaterThan(0)
       expect(fake.toasts.length).toBe(1)
     } finally {
       cleanup()
@@ -202,7 +204,7 @@ describe("usage plugin (fake context)", () => {
     try {
       await sleep(50)
       expect(fake.notifies).toHaveLength(0)
-      const value = fake.stores.get("usage-tui:snapshot")?.value as Snapshot
+      const value = fake.stores.get("snapshot")?.value as Snapshot
       expect(value.ok).toBe(true)
       expect(value.mode).toBe("spend")
     } finally {
