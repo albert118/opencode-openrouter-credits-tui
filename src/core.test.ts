@@ -3,18 +3,22 @@ import { join } from "node:path"
 import {
   DEFAULT_OPTIONS,
   EMPTY,
+  buildStatusLine,
   daysLeft,
   defaultAuthPath,
   formatDaysLeft,
   formatSpendPerDay,
+  initialSnapshot,
   isSnapshot,
   num,
   parseOptions,
   pctOf,
+  slotSpec,
   spendPerDay,
   tierColor,
   tierColorVariant,
   tierOf,
+  tierThemeToken,
   usd,
   widgetText,
   type Snapshot,
@@ -354,5 +358,64 @@ describe("defaultAuthPath", () => {
   })
   it("backs DEFAULT_OPTIONS.authPath into the opencode data dir", () => {
     expect(DEFAULT_OPTIONS.authPath.endsWith(join("opencode", "auth.json"))).toBe(true)
+  })
+})
+
+describe("tierThemeToken", () => {
+  it("maps tiers to v2 semantic theme token paths", () => {
+    expect(tierThemeToken("green")).toBe("text.feedback.success.base")
+    expect(tierThemeToken("yellow")).toBe("text.feedback.warning.base")
+    expect(tierThemeToken("orange")).toBe("text.feedback.warning.base")
+    expect(tierThemeToken("red")).toBe("text.feedback.error.base")
+  })
+  it("falls back to the muted text token", () => {
+    expect(tierThemeToken("muted")).toBe("text.muted")
+  })
+})
+
+describe("initialSnapshot", () => {
+  it("clears the stale daysLeft from a stored snapshot", () => {
+    const stored = snap({ daysLeft: 5, usage: 100 })
+    const seeded = initialSnapshot(stored)
+    expect(seeded.daysLeft).toBeNull()
+    expect(seeded.remaining).toBe(stored.remaining)
+    expect(seeded).not.toBe(stored)
+  })
+  it("starts in the loading state for garbage input", () => {
+    const loading = { ...EMPTY, loading: true, error: "loading" }
+    expect(initialSnapshot(null)).toEqual(loading)
+    expect(initialSnapshot(42)).toEqual(loading)
+    expect(initialSnapshot("nope")).toEqual(loading)
+    expect(initialSnapshot({ ok: "yes", fetchedAt: 1 })).toEqual(loading)
+  })
+  it("keeps a loading seed idempotent", () => {
+    const seed = initialSnapshot(undefined)
+    expect(seed.loading).toBe(true)
+    expect(initialSnapshot(seed)).toEqual(seed)
+  })
+})
+
+describe("buildStatusLine", () => {
+  it("wraps widgetText with the options verbosity", () => {
+    const s = snap({ remaining: 75, limit: 100, reset: "weekly" })
+    expect(buildStatusLine(s, { ...DEFAULT_OPTIONS, verbose: false })).toBe(
+      "Credits · 🟢 $75.00 / $100.00 (75%) · weekly",
+    )
+  })
+  it("passes verbose mode through", () => {
+    const s = snap({ daysLeft: 5, freeRemaining: 12, usageWeekly: 25, usageMonthly: 40 })
+    expect(buildStatusLine(s, { ...DEFAULT_OPTIONS, verbose: true })).toBe(
+      "Credits · 🟢 $75.00 / $100.00 (75%) · weekly · ≈5d left · free 12 · wk $25.00 · mo $40.00",
+    )
+  })
+  it("appends the spend burn wrapper", () => {
+    const s = { ...EMPTY, ok: true, mode: "spend", spentUsd: 12.34, requestCount: 850, fetchedAt: 1 }
+    expect(buildStatusLine(s, DEFAULT_OPTIONS, 2.1)).toBe("Spend · $12.34 · 850 req · ≈$2.1/day")
+  })
+})
+
+describe("slotSpec", () => {
+  it("targets the home footer status slot with append placement", () => {
+    expect(slotSpec).toEqual({ name: "home.footer.status", placement: "append" })
   })
 })

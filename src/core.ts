@@ -1,8 +1,16 @@
 import { homedir } from "node:os"
 import { join } from "node:path"
 import type { RGBA } from "@opentui/core"
-import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import { getProvider } from "./providers"
+
+/** The subset of the theme consumed by `tierColor`, kept structural so the
+ * v1-era `@opencode-ai/plugin/tui` type import could be dropped on v2. */
+export type TuiThemeCurrent = {
+  success: RGBA
+  warning: RGBA
+  error: RGBA
+  textMuted: RGBA
+}
 
 export type Tier = "green" | "yellow" | "orange" | "red" | "muted"
 export type ToastVariant = "success" | "warning" | "error" | "info"
@@ -266,4 +274,34 @@ export function parseOptions(raw: unknown): Options {
     baseUrl:
       typeof opts.baseUrl === "string" && opts.baseUrl.length > 0 ? opts.baseUrl : DEFAULT_OPTIONS.baseUrl,
   }
+}
+
+export const slotSpec = {
+  name: "home.footer.status",
+  placement: "append",
+} as const
+
+/** v2 semantic theme token path for a tier (resolved against `context.theme`). */
+export function tierThemeToken(tier: Tier): string {
+  switch (tier) {
+    case "green":
+      return "text.feedback.success.base"
+    case "yellow":
+    case "orange":
+      return "text.feedback.warning.base"
+    case "red":
+      return "text.feedback.error.base"
+    default:
+      return "text.muted"
+  }
+}
+
+/** Seed transition for the durable snapshot store: a prior snapshot loses its
+ * stale two-sample burn estimate; anything else starts in the loading state. */
+export function initialSnapshot(stored: unknown): Snapshot {
+  return isSnapshot(stored) ? { ...stored, daysLeft: null } : { ...EMPTY, loading: true, error: "loading" }
+}
+
+export function buildStatusLine(snapshot: Snapshot, opts: Options, spendPerDayValue: number | null = null): string {
+  return widgetText(snapshot, opts.verbose, spendPerDayValue)
 }
