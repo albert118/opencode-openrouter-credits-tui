@@ -71,7 +71,6 @@ export default {
           <box
             alignSelf="flex-start"
             flexGrow={0}
-            backgroundColor={theme.background.raised.base}
             paddingLeft={1}
             paddingRight={1}
           >
